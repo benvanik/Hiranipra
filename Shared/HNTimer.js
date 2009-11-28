@@ -7,7 +7,8 @@ var HNTimer = function(updateCallback, renderCallback) {
     this.renderCount = 0;
     this.renderInterval = 1;
     this.rendersPerSecond = 0;
-    this.lastTime = (new Date().getTime());
+    this.lastUpdateTime = (new Date().getTime());
+    this.lastRenderTime = (new Date().getTime());
     this.updateCallback = updateCallback;
     this.renderCallback = renderCallback;
     this.intervalId = null;
@@ -15,6 +16,8 @@ var HNTimer = function(updateCallback, renderCallback) {
 }
 HNTimer.prototype.start = function() {
     this.stop();
+    this.lastUpdateTime = (new Date().getTime());
+    this.lastRenderTime = (new Date().getTime());
     var minInterval = Math.min(this.updateInterval, this.renderInterval);
     var timer = this;
     this.intervalId = window.setInterval(function() {
@@ -32,14 +35,16 @@ HNTimer.prototype.stop = function() {
 }
 HNTimer.prototype.tick = function() {
     var time = (new Date().getTime());
-    var delta = (time - this.lastTime) / 1000.0;
-    this.lastTime = time;
     this.tickCount++;
     if (this.tickCount % this.updateInterval == 0) {
+        var delta = (time - this.lastUpdateTime) / 1000.0;
+        this.lastUpdateTime = time;
         this.updateCount++;
         this.updateCallback[1].call(this.updateCallback[0], delta);
     }
     if (this.tickCount % this.renderInterval == 0) {
+        var delta = (time - this.lastRenderTime) / 1000.0;
+        this.lastRenderTime = time;
         this.renderCount++;
         this.renderCallback[1].call(this.renderCallback[0], delta);
     }
