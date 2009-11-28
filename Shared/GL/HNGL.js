@@ -21,11 +21,11 @@ if (!("WebGLUnsignedShortArray" in window))
     WebGLUnsignedShortArray = window.CanvasUnsignedShortArray;
 /* ---------------------------------------------------------------------------- */
 function fixupGL(gl) {
-    if (!gl.getShaderi) {
-        gl.getShaderi = gl.getShaderParameter;
+    if (!gl.getShaderParameter) {
+        gl.getShaderParameter = gl.getShaderi;
     }
-    if (!gl.getProgrami) {
-        gl.getProgrami = gl.getProgramParameter;
+    if (!gl.getProgramParameter) {
+        gl.getProgramParameter = gl.getProgrami;
     }
 }
 function emptyTexImage2D(gl, internalFormat, width, height, format, type) {

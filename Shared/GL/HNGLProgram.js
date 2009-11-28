@@ -11,7 +11,7 @@ HNGLShader.fromSource = function(gl, type, source) {
     var id = gl.createShader(type);
     gl.shaderSource(id, source);
     gl.compileShader(id);
-    if (!gl.getShaderi(id, gl.COMPILE_STATUS)) {
+    if (!gl.getShaderParameter(id, gl.COMPILE_STATUS)) {
         con.error("failed to compile " + (type == gl.VERTEX_SHADER ? "vertex shader" : "fragment shader") + ": " + gl.getShaderInfoLog(id));
         gl.deleteShader(id);
         return null;
@@ -53,25 +53,25 @@ HNGLProgram.fromShaders = function(gl, vertexShader, fragmentShader) {
     gl.attachShader(id, vertexShader.id);
     gl.attachShader(id, fragmentShader.id);
     gl.linkProgram(id);
-    if (!gl.getProgrami(id, gl.LINK_STATUS)) {
+    if (!gl.getProgramParameter(id, gl.LINK_STATUS)) {
         con.error("failed to link program: " + gl.getProgramInfoLog(id));
         gl.deleteProgram(id);
         return null;
     }
     gl.validateProgram(id);
-    if (!gl.getProgrami(id, gl.VALIDATE_STATUS)) {
+    if (!gl.getProgramParameter(id, gl.VALIDATE_STATUS)) {
         con.error("failed to validate program: " + gl.getProgramInfoLog(id));
         gl.deleteProgram(id);
         return null;
     }
     var program = new HNGLProgram(gl, id);
-    program.uniformCount = gl.getProgrami(id, gl.ACTIVE_UNIFORMS);
+    program.uniformCount = gl.getProgramParameter(id, gl.ACTIVE_UNIFORMS);
     for (var n = 0; n < program.uniformCount; n++) {
         var uniform = gl.getActiveUniform(id, n);
         program[uniform.name] = n;
         con.debug("uniform " + uniform.name + " : " + n);
     }
-    program.attribCount = gl.getProgrami(id, gl.ACTIVE_ATTRIBUTES);
+    program.attribCount = gl.getProgramParameter(id, gl.ACTIVE_ATTRIBUTES);
     for (var n = 0; n < program.attribCount; n++) {
         var attrib = gl.getActiveAttrib(id, n);
         program[attrib.name] = n;
