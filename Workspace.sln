@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\HNConfig.js = Shared\HNConfig.js
+		Shared\HNConsole.js = Shared\HNConsole.js
+		Shared\HNFPSCamera.js = Shared\HNFPSCamera.js
+		Shared\HNKeyboard.js = Shared\HNKeyboard.js
+		Shared\HNMath.js = Shared\HNMath.js
+		Shared\HNProfileGraph.js = Shared\HNProfileGraph.js
+		Shared\HNShell.js = Shared\HNShell.js
+		Shared\HNTimer.js = Shared\HNTimer.js
+		Shared\HNUtil.js = Shared\HNUtil.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GL", "GL", "{4A8D5DAA-10F2-4EA8-A233-8DC1675C54A6}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\GL\HNGL.js = Shared\GL\HNGL.js
+		Shared\GL\HNGLFeedbackBuffer.js = Shared\GL\HNGLFeedbackBuffer.js
+		Shared\GL\HNGLGeometry.js = Shared\GL\HNGLGeometry.js
+		Shared\GL\HNGLGrid.js = Shared\GL\HNGLGrid.js
+		Shared\GL\HNGLProgram.js = Shared\GL\HNGLProgram.js
+		Shared\GL\HNGLQuadDrawer.js = Shared\GL\HNGLQuadDrawer.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experiments", "Experiments", "{C31DFC40-281E-4EC9-845B-83298229A458}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Template", "Template", "{90120C90-6D6F-4ADA-8BE1-A47750AAF7FF}"
+	ProjectSection(SolutionItems) = preProject
+		Experiments\Template\index.html = Experiments\Template\index.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MegaTextures", "MegaTextures", "{DE058FC3-655C-475E-9503-2E147CAABF93}"
+	ProjectSection(SolutionItems) = preProject
+		Experiments\MegaTextures\index.html = Experiments\MegaTextures\index.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MegaTextures", "MegaTextures", "{0F3AAA71-2CB0-4B83-9FC2-50CBAB336A94}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\MegaTextures\HNMegaTexture.js = Shared\MegaTextures\HNMegaTexture.js
+		Shared\MegaTextures\HNMegaTextureCache.js = Shared\MegaTextures\HNMegaTextureCache.js
+		Shared\MegaTextures\HNMegaTextureLoader-Worker.js = Shared\MegaTextures\HNMegaTextureLoader-Worker.js
+		Shared\MegaTextures\HNMegaTextureLoader.js = Shared\MegaTextures\HNMegaTextureLoader.js
+		Shared\MegaTextures\HNMegaTextureShaders.js = Shared\MegaTextures\HNMegaTextureShaders.js
+		Shared\MegaTextures\HNMegaTextureTile.js = Shared\MegaTextures\HNMegaTextureTile.js
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4A8D5DAA-10F2-4EA8-A233-8DC1675C54A6} = {A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}
+		{0F3AAA71-2CB0-4B83-9FC2-50CBAB336A94} = {A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}
+		{90120C90-6D6F-4ADA-8BE1-A47750AAF7FF} = {C31DFC40-281E-4EC9-845B-83298229A458}
+		{DE058FC3-655C-475E-9503-2E147CAABF93} = {C31DFC40-281E-4EC9-845B-83298229A458}
+	EndGlobalSection
+EndGlobal
