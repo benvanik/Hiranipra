@@ -300,7 +300,7 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
                 tileRef.touch(renderFrameNumber);
             } else {
                 megaTexture = this.megaTextures[texId];
-                con.assert(megaTexture, "megatexture not found - either not registered or bogus data");
+                //con.assert(megaTexture, "megatexture not found - either not registered or bogus data");
                 var tile = loader.queue(megaTexture, level, tileX, tileY);
                 tile.lastUse = renderFrameNumber;
             }
@@ -309,17 +309,18 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
                 // TODO: priority (by level)
                 var tx = tileX;
                 var ty = tileY;
+                var lastRef = tileRef;
                 for (var l = level - 1; l >= 0; l--) {
                     tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
-                    var parentRef = tileRef ? tileRef.parent : null;
+                    var parentRef = lastRef ? lastRef.parent : null;
                     if (!parentRef) {
                         // Attempt a lookup - this is slow
                         parentRef = this.getTileRef(texId, l, tx, ty);
                     }
                     if (parentRef) {
                         parentRef.touch(renderFrameNumber);
-                        if (tileRef) {
-                            tileRef.parent = parentRef;
+                        if (lastRef) {
+                            lastRef.parent = parentRef;
                         }
                     } else {
                         var tile = loader.queue(megaTexture, l, tx, ty);
