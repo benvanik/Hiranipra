@@ -5,6 +5,7 @@ var HNFPSCamera = function() {
     this.zfar = 100.0;
     this.fov = Math.PI / 2.0;
 
+    this.moveScalar = 1.0;
     this.dposition = new HNVector3(0, 0, 0);
     this.dyaw = this.dpitch = this.droll = 0;
     this.dfov = 0.0;
@@ -26,6 +27,7 @@ HNFPSCamera.prototype.update = function(delta) {
 
     var q = HNQuaternion.fromYawPitchRoll(this.yaw, this.pitch, this.roll);
     var dpos = q.transformVec3(this.dposition);
+    dpos.multiplyScalar(this.moveScalar * 80.0 * delta);
     this.position.addTo(dpos);
 
     this.projMatrix = HNMatrix4x4.perspective(
@@ -120,6 +122,11 @@ HNFPSCamera.prototype.updateInput = function(delta, keyboard) {
     }
     if (keyboard.isDown(221)) { // ]
         dfov -= 1;
+    }
+    if (keyboard.isDown(16)) { // shift
+        this.moveScalar = 4.0;
+    } else {
+        this.moveScalar = 1.0;
     }
     if (dx || dy || dz) {
         this.setPositionImpulse(dx, dy, dz);
