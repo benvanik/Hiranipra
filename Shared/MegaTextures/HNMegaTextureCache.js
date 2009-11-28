@@ -158,7 +158,8 @@ var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
     }
 
     // map of texture/level/x/y to HNMegaTextureTileRef
-    this.tiles = [];
+    this.tiles = {};
+    this.tileList = [];
 
     // Lists of tiles picked up through update
     this.changedTiles = [];
@@ -238,6 +239,7 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
     tileRef.bindToSlot(n, texture.width, texture.height);
     tileRef.touch(this.lastFrameNumber);
     this.tiles[key] = tileRef;
+    this.tileList.push(tileRef);
 
     // Find our direct parent and add to the tree
     if (tile.level > 0) {
@@ -266,50 +268,58 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
 
     return true;
 }
-HNMegaTextureCache.prototype.removeUnusedTiles = function() {
-    // TODO: more efficient - luckily, we are bounded by tileCapacity, which is never very large
-    for (var key in this.tiles) {
-        var tileRef = this.tiles[key];
-        if (tileRef.lastUse + 4 < this.lastFrameNumber) {
-            // Remove
-            delete this.tiles[key];
-            this.freeList.push(tileRef.n);
+HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount) {
+    //con.debug("texture cache full - removing " + requestedRemovalCount + " tiles to make room for new ones");
+    this.tileList.sort(function(a, b) { return a.lastUse - b.lastUse; });
+    for (var removalCount = 0; (removalCount < requestedRemovalCount) && (this.tileList.length > 0); removalCount++) {
+        var tileRef = this.tileList[0];
+        if (tileRef.lastUse + 4 >= this.lastFrameNumber) {
+            // Recently used - don't evict
+            // NOTE: since we are sorted, we know we have hit the limit - abort
+            con.warn("texture cache thrashing");
+            break;
+        }
 
-            var parentRef = null;
-            if (tileRef.parent) {
-                tileRef.parent.children[(tileRef.tileY % 2) * 2 + (tileRef.tileX % 2)] = null;
-                parentRef = tileRef.parent;
-                tileRef.parent = null;
-            } else if (tileRef.level > 0) {
-                // Try really hard to find a parent - any parent
-                var tx = tileRef.tileX;
-                var ty = tileRef.tileY;
-                for (var level = tileRef.level - 1; level >= 0; level--) {
-                    tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
-                    parentRef = this.getTileRef(tileRef.megaTexture.uniqueId, level, tx, ty);
-                    if (parentRef) {
-                        break;
-                    }
+        // Remove tile
+        var key = [tileRef.megaTexture.uniqueId, tileRef.level, tileRef.tileX, tileRef.tileY].join(",");
+        delete this.tiles[key];
+        this.tileList.shift();
+        this.freeList.push(tileRef.n);
+
+        var parentRef = null;
+        if (tileRef.parent) {
+            tileRef.parent.children[(tileRef.tileY % 2) * 2 + (tileRef.tileX % 2)] = null;
+            parentRef = tileRef.parent;
+            tileRef.parent = null;
+        } else if (tileRef.level > 0) {
+            // Try really hard to find a parent - any parent
+            var tx = tileRef.tileX;
+            var ty = tileRef.tileY;
+            for (var level = tileRef.level - 1; level >= 0; level--) {
+                tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
+                parentRef = this.getTileRef(tileRef.megaTexture.uniqueId, level, tx, ty);
+                if (parentRef) {
+                    break;
                 }
             }
-            for (var n = 0; n < 4; n++) {
-                if (tileRef.children[n]) {
-                    tileRef.children[n].parent = null;
-                }
+        }
+        for (var n = 0; n < 4; n++) {
+            if (tileRef.children[n]) {
+                tileRef.children[n].parent = null;
             }
-            tileRef.children = [null, null, null, null];
+        }
+        tileRef.children = [null, null, null, null];
 
-            // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
-            this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
+        // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
+        this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
 
-            // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
-            if (true) {
-                var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
-                var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
-                var sw = this.totalTileSize;
-                var sh = this.totalTileSize;
-                this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
-            }
+        // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
+        if (true) {
+            var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
+            var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
+            var sw = this.totalTileSize;
+            var sh = this.totalTileSize;
+            this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
         }
     }
 }
@@ -340,7 +350,10 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
     var completedTiles = loader.getCompletedTiles(2, renderFrameNumber);
     if (completedTiles.length > 0) {
         this.beginUpdate(renderFrameNumber);
-        this.removeUnusedTiles();
+        var tileCapacityDiff = this.tileList.length + completedTiles.length - this.tileCapacity;
+        if (tileCapacityDiff > 0) {
+            this.removeUnusedTiles(tileCapacityDiff);
+        }
         for (var n = 0; n < completedTiles.length; n++) {
             this.addTile(completedTiles[n]);
         }
