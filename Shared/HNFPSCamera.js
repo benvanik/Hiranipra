@@ -39,13 +39,13 @@ HNFPSCamera.prototype.update = function(delta) {
     m.rotateZ(this.roll);
     this.viewMatrix = m;
 
-//    var tfov = this.fov;
-//    if (this.dfov > 0) {
-//        tfov *= 2.0 * delta;
-//    } else {
-//        tfov /= 2.0 * delta;
-//    }
-//    this.fov = Math.clamp(tfov, 0.0, Math.PI / 2.0);
+    //    var tfov = this.fov;
+    //    if (this.dfov > 0) {
+    //        tfov *= 2.0 * delta;
+    //    } else {
+    //        tfov /= 2.0 * delta;
+    //    }
+    //    this.fov = Math.clamp(tfov, 0.0, Math.PI / 2.0);
 
     this.dposition = new HNVector3(0, 0, 0);
     this.dyaw = this.dpitch = this.droll = 0;
@@ -53,8 +53,18 @@ HNFPSCamera.prototype.update = function(delta) {
     this.isDirty = false;
     return true;
 }
+HNFPSCamera.prototype.setPosition = function(x, y, z) {
+    this.position = new HNVector3(x, y, z);
+    this.isDirty = true;
+}
 HNFPSCamera.prototype.setPositionImpulse = function(dx, dy, dz) {
     this.dposition = new HNVector3(dx, dy, dz);
+    this.isDirty = true;
+}
+HNFPSCamera.prototype.setYawPitchRoll = function(yaw, pitch, roll) {
+    this.yaw = yaw;
+    this.pitch = pitch;
+    this.roll = roll;
     this.isDirty = true;
 }
 HNFPSCamera.prototype.setYawPitchRollImpulse = function(dyaw, dpitch, droll) {

@@ -107,6 +107,10 @@
             this.camera.znear = 0.1;
             this.camera.zfar = 10000.0;
 
+            // Known good startup location
+            this.camera.setPosition(439, -801, 590);
+            this.camera.setYawPitchRoll(-8.969247025998863, -1.1403981332530948, 0);
+
             this.viewProjStack = new HNMatrixStack4x4();
             this.modelStack = new HNMatrixStack4x4();
 
@@ -151,7 +155,7 @@
                 con.endGroup();
 
                 con.beginGroup("HNMT - initializing feedback buffer")
-                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16);
+                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16, 2, true);
                 this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
                 con.endGroup();
 
@@ -252,24 +256,40 @@
         }
 
         app.render = function(delta) {
+            var gl = app.gl;
             var startTime = (new Date().getTime());
             this.renderFrameNumber++;
 
-            var gl = app.gl;
+            // ---- Upload newly loaded textures into the texture cache ----
+            this.megaTextureCache.processCompletedTiles(this.renderFrameNumber, this.megaTextureLoader);
 
-            {
-                var completedTiles = this.megaTextureLoader.getCompletedTiles();
-                if (completedTiles.length > 0) {
-                    this.megaTextureCache.beginUpdate(this.renderFrameNumber);
-                    this.megaTextureCache.removeUnusedTiles();
-                    for (var n = 0; n < completedTiles.length; n++) {
-                        this.megaTextureCache.addTile(completedTiles[n]);
-                    }
-                    this.megaTextureCache.endUpdate();
+            // ---- Start MT pass 1 ----
+            // This redirects all output to the feedback buffer and draws just the objects that use megatextures
+            // Before we draw, though, we save off the last frame we drew so that we can process it later
+            // NOTE: the update frequency is determined by updateInveral - 1 is every frame, 2 is every other, etc
+            var lastFrameFeedbackData = null;
+            if ((this.renderFrameNumber % this.feedbackBuffer.updateInterval) == 0) {
+                this.feedbackBuffer.begin();
+                lastFrameFeedbackData = this.feedbackBuffer.readPixels();
+                gl.clearColor(0, 0, 0, 0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                gl.enable(gl.BLEND);
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(gl.LEQUAL);
+                {
+                    this.modelStack.push();
+                    this.modelStack.translate(0, 5, 0);
+                    this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                    this.staticProgram.pass1.begin(this.viewProjStack.current, this.modelStack.current);
+                    this.megaTextureCache.setPass1Uniforms(this.staticProgram.pass1, this.feedbackBuffer, this.megaTexture);
+                    this.obj.draw([this.staticProgram.pass1.a_pos, this.staticProgram.pass1.a_tex0]);
+                    this.staticProgram.pass1.end();
+                    this.modelStack.pop();
                 }
-                delete completedTiles;
+                this.feedbackBuffer.end();
             }
 
+            // ---- Begin drawing our scene ----
             gl.viewport(0, 0, this.displayCanvas.width, this.displayCanvas.height);
             gl.clearColor(0.15, 0.15, 0.15, 1);
             gl.clearDepth(1.0);
@@ -282,67 +302,38 @@
             this.viewProjStack.multiplyBy(this.camera.projMatrix);
             this.modelStack.loadIdentity();
 
+            // ---- Debug grid ----
             this.grid.draw(this.viewProjStack.current, 1.0);
 
-            this.feedbackBuffer.begin();
-            var lastFrameFeedbackData = this.feedbackBuffer.readPixels();
-            gl.clearColor(0, 0, 0, 0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.enable(gl.BLEND);
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
+            // ---- Dummy object ----
             {
                 this.modelStack.push();
-                this.modelStack.translate(0, 1, 0);
+                this.modelStack.translate(0, 5, 0);
                 this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
-                //this.modelStack.scale(this.megaTexture.width, 1, this.megaTexture.height);
-                this.staticProgram.pass1.begin(this.viewProjStack.current, this.modelStack.current);
-                gl.uniform1f(this.staticProgram.pass1.u_mt_bias, -Math.log(this.feedbackBuffer.downsample) / Math.log(2));
-                gl.uniform4f(this.staticProgram.pass1.u_mt_tex, this.megaTexture.width, this.megaTexture.height, this.megaTexture.tileSize, this.megaTexture.uniqueId);
-                this.obj.draw([this.staticProgram.pass1.a_pos, this.staticProgram.pass1.a_tex0]);
-                this.staticProgram.pass1.end();
-                this.modelStack.pop();
-            }
-            this.feedbackBuffer.end();
-
-            gl.disable(gl.BLEND);
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
-
-            {
-                this.modelStack.push();
-                this.modelStack.translate(0, 1, 0);
-                this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
-                //this.modelStack.scale(this.megaTexture.width, 1, this.megaTexture.height);
                 this.staticProgram.pass2.begin(this.viewProjStack.current, this.modelStack.current);
-                gl.uniform4f(this.staticProgram.pass2.u_mt_tex, this.megaTexture.width, this.megaTexture.height, this.megaTexture.tileSize, this.megaTexture.uniqueId);
-                gl.uniform4f(this.staticProgram.pass2.u_mt_texCache, this.megaTextureCache.width, this.megaTextureCache.height, this.megaTextureCache.lookup.width, this.megaTextureCache.lookup.height);
-                gl.uniform4f(this.staticProgram.pass2.u_mt_slot, 0, 0, this.megaTextureCache.tileOverlap, 0);
-                gl.uniform1i(this.staticProgram.pass2.s_mt_lookup, 0);
-                gl.uniform1i(this.staticProgram.pass2.s_mt_texCache, 1);
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, this.megaTextureCache.lookup.texture);
-                gl.activeTexture(gl.TEXTURE1);
-                gl.bindTexture(gl.TEXTURE_2D, this.megaTextureCache.texture);
-                gl.activeTexture(gl.TEXTURE0);
+                this.megaTextureCache.setPass2Uniforms(this.staticProgram.pass2, this.megaTexture);
                 this.obj.draw([this.staticProgram.pass2.a_pos, this.staticProgram.pass2.a_tex0]);
                 this.staticProgram.pass2.end();
                 this.modelStack.pop();
             }
 
-            // Draw debug megatexture stuff
-            gl.enable(gl.BLEND);
-            gl.disable(gl.DEPTH_TEST);
-            this.quadDrawer.beginBatch(this.displayCanvas.width, this.displayCanvas.height);
-            this.quadDrawer.draw(this.feedbackBuffer.texture, 0, 0, 128, 128 / (this.displayCanvas.width / this.displayCanvas.height), true);
-            this.quadDrawer.draw(this.megaTextureCache.texture, 0, 128, 128, 128, true);
-            this.quadDrawer.draw(this.megaTextureCache.lookup.texture, 0, 256, 128, 128 / (this.megaTextureCache.lookup.width / this.megaTextureCache.lookup.height), true);
-            this.quadDrawer.endBatch();
+            // ---- Draw debug megatexture stuff ----
+            {
+                gl.enable(gl.BLEND);
+                gl.disable(gl.DEPTH_TEST);
+                this.quadDrawer.beginBatch(this.displayCanvas.width, this.displayCanvas.height);
+                this.quadDrawer.draw(this.feedbackBuffer.texture, 0, 0, 128, 128 / (this.displayCanvas.width / this.displayCanvas.height), true);
+                this.quadDrawer.draw(this.megaTextureCache.texture, 0, 128, 128, 128, true);
+                this.quadDrawer.draw(this.megaTextureCache.lookup.texture, 0, 256, 128, 128 / (this.megaTextureCache.lookup.width / this.megaTextureCache.lookup.height), true);
+                this.quadDrawer.endBatch();
+            }
 
+            // ---- Process feedback data from last frames pass 1 ----
             if (lastFrameFeedbackData) {
                 this.megaTextureCache.processFeedbackData(lastFrameFeedbackData, this.renderFrameNumber, this.megaTextureLoader);
             }
 
+            // ---- Update the graph ----
             if (this.profileGraph) {
                 var endTime = ((new Date().getTime()) - startTime);
                 this.profileGraph.beginUpdate();
@@ -362,7 +353,7 @@
 
 </head>
 <body onload="onLoad();">
-    <canvas id="displayCanvas" width="800" height="600"></canvas>
+    <canvas id="displayCanvas" width="640" height="480"></canvas>
     <br />
     <br />
     <canvas id="profileGraphCanvas" style="border: 1px; border-color: grey; border-style: solid;"></canvas>

@@ -233,11 +233,42 @@ HNMegaTextureCache.prototype.getTileRef = function(megaTextureId, level, tileX, 
     var key = [megaTextureId, level, tileX, tileY].join(",");
     return this.tiles[key];
 }
+HNMegaTextureCache.prototype.setPass1Uniforms = function(program, feedbackBuffer, megaTexture) {
+    var gl = this.gl;
+    gl.uniform1f(program.u_mt_bias, -Math.floor(Math.log(feedbackBuffer.downsample) / Math.log(2)));
+    gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
+}
+HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
+    var gl = this.gl;
+    gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
+    gl.uniform4f(program.u_mt_texCache, this.width, this.height, this.lookup.width, this.lookup.height);
+    gl.uniform4f(program.u_mt_slot, 0, 0, this.tileOverlap, 0);
+    gl.uniform1i(program.s_mt_lookup, 0);
+    gl.uniform1i(program.s_mt_texCache, 1);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.lookup.texture);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.activeTexture(gl.TEXTURE0);
+}
+HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber, loader) {
+    // Limit to just a few tiles per frame for now
+    var completedTiles = loader.getCompletedTiles(2);
+    if (completedTiles.length > 0) {
+        this.beginUpdate(renderFrameNumber);
+        this.removeUnusedTiles();
+        for (var n = 0; n < completedTiles.length; n++) {
+            this.addTile(completedTiles[n]);
+        }
+        this.endUpdate();
+    }
+}
 HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {
     var lastTexId = 0, lastLevel = 0, lastTileX = 0, lastTileY = 0;
     var pixelIndex = 0;
     for (var yy = 0; yy < feedbackData.height; yy++) {
         for (var xx = 0; xx < feedbackData.width; xx++, pixelIndex += 4) {
+            // TODO: remove this % - bug in WebKit/Chromium where 1 == 256 instead of 0
             var texId = feedbackData.pixels[pixelIndex + 3] % 256;
             if (texId == 0) {
                 continue;

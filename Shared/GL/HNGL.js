@@ -37,7 +37,6 @@ function emptyTexImage2D(gl, internalFormat, width, height, format, type) {
         con.warn("browser texImage2D does not accept null - sending up a real blank texture");
         var pixels = new WebGLUnsignedByteArray(width * height * ( internalFormat == gl.RGBA ? 4 : 3 ) );
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, pixels);
-        delete pixels;
     }
 }
 /* ---------------------------------------------------------------------------- */
