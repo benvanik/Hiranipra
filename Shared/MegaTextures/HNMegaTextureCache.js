@@ -7,6 +7,8 @@ var HNMegaTextureTileRef = function(tile) {
     this.level = tile.level;
     this.tileX = tile.tileX;
     this.tileY = tile.tileY;
+    this.parent = null;
+    this.children = [null, null, null, null];
 }
 HNMegaTextureTileRef.prototype.bindToSlot = function(n, width, height) {
     this.n = n;
@@ -25,6 +27,7 @@ var HNMegaTextureLookup = function(textureCache) {
     this.maxLevel = 8;
     this.width = Math.pow(2, this.maxLevel) * 2;
     this.height = Math.pow(2, this.maxLevel);
+    this.stride = this.width * 3;
     con.info("lookup table " + this.width + "x" + this.height + " (" + (this.width * this.height * 3) + "b) with " + 1 + " slots each up to level " + this.maxLevel);
 
     this.texture = gl.createTexture();
@@ -49,44 +52,79 @@ HNMegaTextureLookup.prototype.beginUpdate = function() {
 }
 HNMegaTextureLookup.prototype.endUpdate = function() {
     var gl = this.textureCache.gl;
-}
-HNMegaTextureLookup.prototype.processChanges = function(addedTiles, removedTiles) {
-    // TODO: something smart with added/removed tiles - for now, we just rebuild every frame
-    var gl = this.textureCache.gl;
-    this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
-    for (var key in this.textureCache.tiles) {
-        var tileRef = this.textureCache.tiles[key];
-        var slot = 0; // TODO: get
-
-        for (var level = tileRef.level; level <= tileRef.megaTexture.maxLevel; level++) {
-            var dataIndex = 0; // slot offset
-            dataIndex += (1 << level) * 3;
-            var levelDiff = level - tileRef.level;
-            var levelX = tileRef.tileX << levelDiff;
-            var levelY = tileRef.tileY << levelDiff;
-            var lw = 1 << levelDiff;
-            dataIndex += (levelY * (this.width * 3)) + (levelX * 3);
-            var tx = Math.floor(tileRef.n % this.textureCache.tilesPerSide);
-            var ty = Math.floor(tileRef.n / this.textureCache.tilesPerSide);
-            for (var y = levelY; y < levelY + lw; y++) {
-                var rowIndex = dataIndex;
-                for (var x = levelX; x < levelX + lw; x++, rowIndex += 3) {
-                    var oldw = this.data[rowIndex + 2];
-                    if (oldw && (oldw < lw)) {
-                        continue;
-                    }
-                    this.data[rowIndex + 0] = tx;
-                    this.data[rowIndex + 1] = ty;
-                    this.data[rowIndex + 2] = lw;
-                }
-                dataIndex += this.width * 3;
-            }
-        }
-    }
-
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.width, this.height, 0, gl.RGB, gl.UNSIGNED_BYTE, this.data);
     gl.bindTexture(gl.TEXTURE_2D, null);
+}
+HNMegaTextureLookup.prototype.fillTileLevel = function(slot, level, lx, ly, lw, ls, tx, ty) {
+    var dataIndex = 0; // TODO: slot offset
+    dataIndex += (1 << level) * 3;
+    dataIndex += (ly * this.stride) + (lx * 3);
+    for (var y = ly; y < ly + lw; y++) {
+        var rowIndex = dataIndex;
+        for (var x = lx; x < lx + lw; x++, rowIndex += 3) {
+            this.data[rowIndex + 0] = tx;
+            this.data[rowIndex + 1] = ty;
+            this.data[rowIndex + 2] = ls;
+        }
+        dataIndex += this.stride;
+    }
+}
+HNMegaTextureLookup.prototype.recursiveFillTile = function(slot, tileRef) {
+    // Fill self in
+    var tx = Math.floor(tileRef.n % this.textureCache.tilesPerSide);
+    var ty = Math.floor(tileRef.n / this.textureCache.tilesPerSide);
+    this.fillTileLevel(slot, tileRef.level, tileRef.tileX, tileRef.tileY, 1, 1, tx, ty);
+
+    if (tileRef.children[0] || tileRef.children[1] || tileRef.children[2] || tileRef.children[3]) {
+        // At least one child exists - slow fill each quadrant (through the pyramid)
+        for (var n = 0; n < 4; n++) {
+            var childRef = tileRef.children[n];
+            if (childRef) {
+                // Child is already filled (probably) - skip it
+            } else {
+                // Fill child with self (and all levels below it)
+                for (var level = tileRef.level + 1; level <= tileRef.megaTexture.maxLevel; level++) {
+                    var levelDiff = level - tileRef.level;
+                    var lw = (1 << levelDiff);
+                    var lwh = Math.floor(lw / 2);
+                    var lx = (tileRef.tileX << levelDiff);
+                    var ly = (tileRef.tileY << levelDiff);
+                    switch (n) {
+                        case 0: break;
+                        case 1: lx += lwh; break;
+                        case 2: ly += lwh; break;
+                        case 3: lx += lwh; ly += lwh; break;
+                    }
+                    this.fillTileLevel(slot, level, lx, ly, lwh, lw, tx, ty);
+                }
+            }
+        }
+    } else {
+        // Leaf node in the quad tree - fill all children in (and all levels below us)
+        for (var level = tileRef.level + 1; level <= tileRef.megaTexture.maxLevel; level++) {
+            var levelDiff = level - tileRef.level;
+            var lx = tileRef.tileX << levelDiff;
+            var ly = tileRef.tileY << levelDiff;
+            var lw = 1 << levelDiff;
+            this.fillTileLevel(slot, level, lx, ly, lw, lw, tx, ty);
+        }
+    }
+}
+HNMegaTextureLookup.prototype.processChanges = function(changedTiles) {
+    // TODO: ensure we aren't adding AND removing a tile in the same frame (not possible?)
+    for (var n = 0; n < changedTiles.length; n++) {
+        //changedTiles[n].op == "add" "remove"
+        if (changedTiles[n].tileRef) {
+            // Refresh
+            var tileRef = changedTiles[n].tileRef;
+            var slot = 0; // TODO: slots
+            this.recursiveFillTile(slot, tileRef);
+        } else {
+            var slot = changedTiles[n].slot;
+            con.warn("would clear entire slot here");
+        }
+    }
 }
 
 var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
@@ -115,15 +153,15 @@ var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     this.freeList = [];
-    for (var n = 0; n < this.tileCapacity; n++)
+    for (var n = 0; n < this.tileCapacity; n++) {
         this.freeList.push(n);
+    }
 
     // map of texture/level/x/y to HNMegaTextureTileRef
     this.tiles = [];
 
     // Lists of tiles picked up through update
-    this.addedTiles = [];
-    this.removedTiles = [];
+    this.changedTiles = [];
 
     this.lookup = new HNMegaTextureLookup(this);
     this.megaTextures = {};
@@ -201,7 +239,30 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
     tileRef.touch(this.lastFrameNumber);
     this.tiles[key] = tileRef;
 
-    this.addedTiles.push(tileRef);
+    // Find our direct parent and add to the tree
+    if (tile.level > 0) {
+        var px = Math.floor(tile.tileX / 2);
+        var py = Math.floor(tile.tileY / 2);
+        // If it doesn't exist, it's ok - we'll get fixed up when it gets added
+        tileRef.parent = this.getTileRef(tile.megaTexture.uniqueId, tile.level - 1, px, py);
+        if (tileRef.parent) {
+            tileRef.parent.children[(tile.tileY % 2) * 2 + (tile.tileX % 2)] = tileRef;
+        }
+    }
+    // Search for our 4 children
+    if (tile.level < tile.megaTexture.maxLevel) {
+        tileRef.children[0] = this.getTileRef(tile.megaTexture.uniqueId, tile.level + 1, tile.tileX * 2 + 0, tile.tileY * 2 + 0);
+        tileRef.children[1] = this.getTileRef(tile.megaTexture.uniqueId, tile.level + 1, tile.tileX * 2 + 1, tile.tileY * 2 + 0);
+        tileRef.children[2] = this.getTileRef(tile.megaTexture.uniqueId, tile.level + 1, tile.tileX * 2 + 0, tile.tileY * 2 + 1);
+        tileRef.children[3] = this.getTileRef(tile.megaTexture.uniqueId, tile.level + 1, tile.tileX * 2 + 1, tile.tileY * 2 + 1);
+        for (var n = 0; n < 4; n++) {
+            if (tileRef.children[n]) {
+                tileRef.children[n].parent = tileRef;
+            }
+        }
+    }
+
+    this.changedTiles.push({ op: "add", tileRef: tileRef });
 
     return true;
 }
@@ -211,9 +272,35 @@ HNMegaTextureCache.prototype.removeUnusedTiles = function() {
         var tileRef = this.tiles[key];
         if (tileRef.lastUse + 4 < this.lastFrameNumber) {
             // Remove
-            this.removedTiles.push(tileRef);
             delete this.tiles[key];
             this.freeList.push(tileRef.n);
+
+            var parentRef = null;
+            if (tileRef.parent) {
+                tileRef.parent.children[(tileRef.tileY % 2) * 2 + (tileRef.tileX % 2)] = null;
+                parentRef = tileRef.parent;
+                tileRef.parent = null;
+            } else if (tileRef.level > 0) {
+                // Try really hard to find a parent - any parent
+                var tx = tileRef.tileX;
+                var ty = tileRef.tileY;
+                for (var level = tileRef.level - 1; level >= 0; level--) {
+                    tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
+                    parentRef = this.getTileRef(tileRef.megaTexture.uniqueId, level, tx, ty);
+                    if (parentRef) {
+                        break;
+                    }
+                }
+            }
+            for (var n = 0; n < 4; n++) {
+                if (tileRef.children[n]) {
+                    tileRef.children[n].parent = null;
+                }
+            }
+            tileRef.children = [null, null, null, null];
+
+            // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
+            this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
 
             // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
             if (true) {
@@ -262,15 +349,12 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
     }
 
     // Update the quad tree if required
-    // Only do this every few frames -- UNLESS we have removals, as they could cause rendering glitches
-    if ((renderFrameNumber % 3 == 0) || this.removedTiles.length) {
-        if (this.addedTiles.length || this.removedTiles.length) {
-            this.lookup.beginUpdate();
-            this.lookup.processChanges(this.addedTiles, this.removedTiles);
-            this.lookup.endUpdate();
-            this.addedTiles = [];
-            this.removedTiles = [];
-        }
+    // TODO: only update every few frames if just adds - removes have to be done right away, though
+    if (this.changedTiles.length) {
+        this.lookup.beginUpdate();
+        this.lookup.processChanges(this.changedTiles);
+        this.lookup.endUpdate();
+        this.changedTiles = [];
     }
 }
 HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {
@@ -312,19 +396,17 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
                 var lastRef = tileRef;
                 for (var l = level - 1; l >= 0; l--) {
                     tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
-                    var parentRef = lastRef ? lastRef.parent : null;
-                    if (!parentRef) {
-                        // Attempt a lookup - this is slow
-                        parentRef = this.getTileRef(texId, l, tx, ty);
-                    }
+                    var parentRef = lastRef ? lastRef.parent : this.getTileRef(texId, l, tx, ty);
                     if (parentRef) {
                         parentRef.touch(renderFrameNumber);
                         if (lastRef) {
                             lastRef.parent = parentRef;
                         }
+                        lastRef = parentRef;
                     } else {
                         var tile = loader.queue(megaTexture, l, tx, ty);
                         tile.lastUse = renderFrameNumber;
+                        lastRef = null;
                     }
                 }
             }
