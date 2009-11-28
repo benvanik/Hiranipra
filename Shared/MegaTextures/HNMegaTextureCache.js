@@ -121,6 +121,10 @@ var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
     // map of texture/level/x/y to HNMegaTextureTileRef
     this.tiles = [];
 
+    // Lists of tiles picked up through update
+    this.addedTiles = [];
+    this.removedTiles = [];
+
     this.lookup = new HNMegaTextureLookup(this);
     this.megaTextures = {};
 
@@ -152,20 +156,11 @@ HNMegaTextureCache.prototype.beginUpdate = function(frameNumber) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     this.quadDrawer.beginBatch(this.width, this.height);
     this.lastFrameNumber = frameNumber;
-    this.addedTiles = [];
-    this.removedTiles = [];
 }
 HNMegaTextureCache.prototype.endUpdate = function() {
     var gl = this.gl;
     this.quadDrawer.endBatch();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    // Update the quad tree
-    this.lookup.beginUpdate();
-    this.lookup.processChanges(this.addedTiles, this.removedTiles);
-    this.lookup.endUpdate();
-    this.addedTiles = [];
-    this.removedTiles = [];
 }
 HNMegaTextureCache.prototype.addTile = function(tile) {
     var gl = this.gl;
@@ -221,11 +216,13 @@ HNMegaTextureCache.prototype.removeUnusedTiles = function() {
             this.freeList.push(tileRef.n);
 
             // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
-            var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
-            var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
-            var sw = this.totalTileSize;
-            var sh = this.totalTileSize;
-            this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
+            if (true) {
+                var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
+                var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
+                var sw = this.totalTileSize;
+                var sh = this.totalTileSize;
+                this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
+            }
         }
     }
 }
@@ -235,7 +232,7 @@ HNMegaTextureCache.prototype.getTileRef = function(megaTextureId, level, tileX, 
 }
 HNMegaTextureCache.prototype.setPass1Uniforms = function(program, feedbackBuffer, megaTexture) {
     var gl = this.gl;
-    gl.uniform1f(program.u_mt_bias, -Math.floor(Math.log(feedbackBuffer.downsample) / Math.log(2)));
+    gl.uniform1f(program.u_mt_bias, -Math.log(feedbackBuffer.downsample) / Math.log(2));
     gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
 }
 HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
@@ -253,7 +250,7 @@ HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
 }
 HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber, loader) {
     // Limit to just a few tiles per frame for now
-    var completedTiles = loader.getCompletedTiles(2);
+    var completedTiles = loader.getCompletedTiles(2, renderFrameNumber);
     if (completedTiles.length > 0) {
         this.beginUpdate(renderFrameNumber);
         this.removeUnusedTiles();
@@ -261,6 +258,19 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
             this.addTile(completedTiles[n]);
         }
         this.endUpdate();
+
+    }
+
+    // Update the quad tree if required
+    // Only do this every few frames -- UNLESS we have removals, as they could cause rendering glitches
+    if ((renderFrameNumber % 3 == 0) || this.removedTiles.length) {
+        if (this.addedTiles.length || this.removedTiles.length) {
+            this.lookup.beginUpdate();
+            this.lookup.processChanges(this.addedTiles, this.removedTiles);
+            this.lookup.endUpdate();
+            this.addedTiles = [];
+            this.removedTiles = [];
+        }
     }
 }
 HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {
@@ -268,7 +278,7 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
     var pixelIndex = 0;
     for (var yy = 0; yy < feedbackData.height; yy++) {
         for (var xx = 0; xx < feedbackData.width; xx++, pixelIndex += 4) {
-            // TODO: remove this % - bug in WebKit/Chromium where 1 == 256 instead of 0
+            // TODO: remove this % - bug in WebKit/Chromium where 1 == 256 instead of 0 (sometimes?)
             var texId = feedbackData.pixels[pixelIndex + 3] % 256;
             if (texId == 0) {
                 continue;
@@ -291,20 +301,29 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
             } else {
                 megaTexture = this.megaTextures[texId];
                 con.assert(megaTexture, "megatexture not found - either not registered or bogus data");
-                loader.queue(megaTexture, level, tileX, tileY);
+                var tile = loader.queue(megaTexture, level, tileX, tileY);
+                tile.lastUse = renderFrameNumber;
             }
             if (level > 0) {
                 // For each coarser level, touch or request the parent tile
-                // TODO: priority (by level)                
+                // TODO: priority (by level)
                 var tx = tileX;
                 var ty = tileY;
                 for (var l = level - 1; l >= 0; l--) {
                     tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
-                    var parentRef = this.getTileRef(texId, l, tx, ty);
+                    var parentRef = tileRef ? tileRef.parent : null;
+                    if (!parentRef) {
+                        // Attempt a lookup - this is slow
+                        parentRef = this.getTileRef(texId, l, tx, ty);
+                    }
                     if (parentRef) {
                         parentRef.touch(renderFrameNumber);
+                        if (tileRef) {
+                            tileRef.parent = parentRef;
+                        }
                     } else {
-                        loader.queue(megaTexture, l, tx, ty);
+                        var tile = loader.queue(megaTexture, l, tx, ty);
+                        tile.lastUse = renderFrameNumber;
                     }
                 }
             }

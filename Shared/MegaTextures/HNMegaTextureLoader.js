@@ -76,17 +76,23 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
     tile.setCallbacks(this, this.tileSucceeded, this.tileFailed);
     return tile;
 }
-HNMegaTextureLoader.prototype.getCompletedTiles = function(max) {
+HNMegaTextureLoader.prototype.getCompletedTiles = function(max, renderFrameNumber) {
     var completedTiles = [];
     var removalKeys = [];
     for (var key in this.completedTiles) {
         var tile = this.pendingTiles[key];
-        completedTiles.push(tile);
         removalKeys.push(key);
         delete this.pendingTiles[key];
-        if (max && completedTiles.length >= max) {
-            // hit the max requested - abort for now
-            break;
+        if (tile.lastUse + 4 < renderFrameNumber) {
+            // Tile has not been requested for awhile - don't put it in the cache
+            //con.debug("skipping unused completed tile");
+        } else {
+            // Valid - queue up
+            completedTiles.push(tile);
+            if (max && completedTiles.length >= max) {
+                // hit the max requested - abort for now
+                break;
+            }
         }
     }
     for (var n = 0; n < removalKeys.length; n++) {

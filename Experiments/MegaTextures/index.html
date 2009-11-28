@@ -100,6 +100,8 @@
                 return;
             }
 
+            this.drawDebugHUD = true;
+
             this.displayCanvas = displayCanvas;
             this.keyboard = new HNKeyboard();
             this.camera = new HNFPSCamera();
@@ -122,6 +124,8 @@
             this.renderFrameNumber = 0;
 
             this.timer = new HNTimer([this, this.update], [this, this.render]);
+            this.timer.updateInterval = 1;
+            this.timer.renderInterval = 2;
             this.timer.start();
         }
 
@@ -134,11 +138,17 @@
                 this.quadDrawer = new HNGLQuadDrawer(gl);
 
                 con.beginGroup("App - initializing a debug megatexture");
-                if (true) {
+                if (false) {
                     this.megaTexture = new HNDeepZoomMegaTexture(
                         255,
                         '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
                         "http://content.seadragon.com/content/images/CarinaNebula.dzi"
+                    );
+                } else if (true) {
+                    this.megaTexture = new HNDeepZoomMegaTexture(
+                        255,
+                        '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
+                        "http://content.seadragon.com/content/images/cjplastic.dzi"
                     );
                 } else {
                     this.megaTexture = new HNTestMegaTexture(255, 65536, 65536, 254, 1);
@@ -250,6 +260,10 @@
                     this.timer.start();
                 }
             }
+            if ((this.keyboard.isDown(72))) // h
+            {
+                this.drawDebugHUD = !this.drawDebugHUD;
+            }
 
             // ---- Update camera ----
             this.camera.updateInput(delta, this.keyboard);
@@ -271,6 +285,7 @@
             if ((this.renderFrameNumber % this.feedbackBuffer.updateInterval) == 0) {
                 this.feedbackBuffer.begin();
                 lastFrameFeedbackData = this.feedbackBuffer.readPixels();
+
                 gl.clearColor(0, 0, 0, 0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                 gl.enable(gl.BLEND);
@@ -318,7 +333,7 @@
             }
 
             // ---- Draw debug megatexture stuff ----
-            {
+            if (this.drawDebugHUD) {
                 gl.enable(gl.BLEND);
                 gl.disable(gl.DEPTH_TEST);
                 this.quadDrawer.beginBatch(this.displayCanvas.width, this.displayCanvas.height);
