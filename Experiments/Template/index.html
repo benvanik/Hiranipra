@@ -133,14 +133,14 @@
                 this.profileGraph.beginUpdate();
                 this.profileGraph.addSample(endTime, 16.7777);
                 this.profileGraph.endUpdate();
-                this.profileGraphText.text(endTime + "ms");
+                this.profileGraphText.innerHTML = endTime + "ms";
             }
         }
 
         function onLoad() {
             app.initialize(
                 $("#displayCanvas").get()[0],
-                $("#profileGraphCanvas").get()[0], $("#profileGraphText")
+                $("#profileGraphCanvas").get()[0], $("#profileGraphText").get()[0]
             );
         }
     </script>
@@ -150,7 +150,7 @@
     <canvas id="displayCanvas" width="640" height="480"></canvas>
     <br />
     <br />
-    <canvas id="profileGraphCanvas" style="border:1px;border-color:grey;border-style:solid;"></canvas>
+    <canvas id="profileGraphCanvas" style="border: 1px; border-color: grey; border-style: solid;"></canvas>
     <span id="profileGraphText"></span>
 </body>
 </html>

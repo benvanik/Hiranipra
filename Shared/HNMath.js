@@ -426,12 +426,12 @@ HNMatrix4x4.prototype.invert = function() {
     this.el = newEl;
 }
 HNMatrix4x4.prototype.transpose = function() {
-    arraySwap(this.el, 1, 4);
-    arraySwap(this.el, 2, 8);
-    arraySwap(this.el, 3, 12);
-    arraySwap(this.el, 6, 9);
-    arraySwap(this.el, 7, 13);
-    arraySwap(this.el, 11, 14);
+    this.el.swap(1, 4);
+    this.el.swap(2, 8);
+    this.el.swap(3, 12);
+    this.el.swap(6, 9);
+    this.el.swap(7, 13);
+    this.el.swap(11, 14);
 }
 HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
     this.el[0] += this.el[3] * tx;

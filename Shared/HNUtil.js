@@ -14,8 +14,14 @@ Math.clamp = function(x, min, max) {
     return Math.min(max, Math.max(min, x));
 }
 
-function arraySwap(array, i1, i2) {
-    var t = array[i1];
-    array[i1] = array[i2];
-    array[i2] = t;
+Array.prototype.swap = function(i1, i2) {
+    var t = this[i1];
+    this[i1] = this[i2];
+    this[i2] = t;
 }
+
+Array.prototype.remove = function(from, to) {
+    var rest = this.slice((to || from) + 1 || this.length);
+    this.length = from < 0 ? this.length + from : from;
+    return this.push.apply(this, rest);
+};

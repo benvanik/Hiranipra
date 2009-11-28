@@ -354,14 +354,14 @@
                 this.profileGraph.beginUpdate();
                 this.profileGraph.addSample(endTime, 16.7777);
                 this.profileGraph.endUpdate();
-                this.profileGraphText.text(endTime + "ms");
+                this.profileGraphText.innerHTML = endTime + "ms";
             }
         }
 
         function onLoad() {
             app.initialize(
                 $("#displayCanvas").get()[0],
-                $("#profileGraphCanvas").get()[0], $("#profileGraphText")
+                $("#profileGraphCanvas").get()[0], $("#profileGraphText").get()[0]
             );
         }
     </script>
