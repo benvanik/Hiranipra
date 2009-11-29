@@ -9,7 +9,9 @@ var HNMegaTextureLoader = function() {
     // map of texture/level/x/y to HNMegaTextureTileRef
     this.pendingTiles = {};
     this.completedTiles = {};
-    this.inflightRequests = [];
+
+    this.maxInFlightRequests = 6;
+    this.inFlightRequests = [];
     this.pendingRequests = [];
 
     var me = this;
@@ -31,11 +33,21 @@ HNMegaTextureLoader.prototype.tileSucceeded = function(tile) {
     //con.debug("tile load succeeded " + tile.level + "@" + tile.tileX + "," + tile.tileY);
     var key = [tile.megaTexture.uniqueId, tile.level, tile.tileX, tile.tileY].join(",");
     this.completedTiles[key] = tile;
+    var index = this.inFlightRequests.indexOf(tile);
+    if (index >= 0) {
+        this.inFlightRequests.remove(index);
+    }
+    this.pump();
 }
 HNMegaTextureLoader.prototype.tileFailed = function(tile) {
     con.error("tile load failed " + tile.level + "@" + tile.tileX + "," + tile.tileY);
     // TODO: retry logic
     // NOTE: we don't remove so the tile is never requested again
+    var index = this.inFlightRequests.indexOf(tile);
+    if (index >= 0) {
+        this.inFlightRequests.remove(index);
+    }
+    this.pump();
 }
 HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY) {
     var key = [megaTexture.uniqueId, level, tileX, tileY].join(",");
@@ -46,19 +58,7 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
 
     var tile = null;
     if (megaTexture.getTileData) {
-        // TODO: if the browser supports sending native objects, do that instead of JSON'ing them
-        con.debug("posting message to worker for tile " + level + "@" + tileX + "," + tileY);
-        var message = {
-            key: key,
-            megaTexture: megaTexture,
-            level: level,
-            tileX: tileX,
-            tileY: tileY
-        };
-        //this.worker.postMessage(JSON.stringify(message));
         tile = HNMegaTextureTile.createPlaceholder(megaTexture, level, tileX, tileY);
-        var tileData = megaTexture.getTileData(level, tileX, tileY);
-        tile.loadPixels(tileData.width, tileData.height, tileData.data);
     } else if (megaTexture.getTileUrl) {
         // URL - create as async img
         var url = megaTexture.getTileUrl(level, tileX, tileY);
@@ -76,9 +76,35 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
     }
 
     this.pendingTiles[key] = tile;
-
+    this.pendingRequests.push(tile);
     tile.setCallbacks(this, this.tileSucceeded, this.tileFailed);
+
+    // TODO: pump here? we don't want to, I think, because then we don't get a chance to sort things first
+
     return tile;
+}
+HNMegaTextureLoader.prototype.pump = function(renderFrameNumber) {
+    if (this.pendingRequests.length == 0) {
+        // Nothing to do
+        return;
+    }
+
+    // TODO: a more clever sort - right now we always take the lowest (coarsest) level first
+    this.pendingRequests.sort(function(a, b) { return a.level - b.level; });
+    while (this.pendingRequests.length > 0) {
+        if (this.inFlightRequests.length > this.maxInFlightRequests) {
+            // No more can go
+            break;
+        }
+        var request = this.pendingRequests.shift();
+        if (request.lastUse + 4 < renderFrameNumber) {
+            // Request is too old - ignore it
+            continue;
+        }
+        this.inFlightRequests.push(request);
+        //con.debug("requesting tile " + request.level + "@" + request.tileX + "," + request.tileY);
+        request.beginRequest(this);
+    }
 }
 HNMegaTextureLoader.prototype.getCompletedTiles = function(max, renderFrameNumber) {
     if (this.suppressLoads) {

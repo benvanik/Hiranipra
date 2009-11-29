@@ -8,6 +8,7 @@ var HNMegaTextureTile = function(megaTexture, level, tileX, tileY) {
     this.tileY = tileY;
     this.isLoading = true;
     this.isPresent = false;
+    this.lastUse = 0; // last frame number the tile was requested on
 }
 HNMegaTextureTile.prototype.setCallbacks = function(target, successCallback, failureCallback) {
     if (this.isLoading == false) {
@@ -39,13 +40,30 @@ HNMegaTextureTile.fromUrl = function(megaTexture, level, tileX, tileY, url) {
             tile.failureCallback.call(tile.callbackTarget, tile);
         }
     }
-    img.src = url;
+    tile.url = url;
     tile.img = img;
     return tile;
 }
 HNMegaTextureTile.createPlaceholder = function(megaTexture, level, tileX, tileY) {
     var tile = new HNMegaTextureTile(megaTexture, level, tileX, tileY);
     return tile;
+}
+HNMegaTextureTile.prototype.beginRequest = function(loader) {
+    if (this.img) {
+        this.img.src = this.url;
+    } else {
+        // TODO: if the browser supports sending native objects, do that instead of JSON'ing them
+        con.debug("posting message to worker for tile " + this.level + "@" + this.tileX + "," + this.tileY);
+        var key = [this.megaTexture.uniqueId, this.level, this.tileX, this.tileY].join(",");
+        var message = {
+            key: key,
+            megaTexture: this.megaTexture,
+            level: this.level,
+            tileX: this.tileX,
+            tileY: this.tileY
+        };
+        loader.worker.postMessage(JSON.stringify(message));
+    }
 }
 HNMegaTextureTile.prototype.loadImageData = function(canvas) {
 }

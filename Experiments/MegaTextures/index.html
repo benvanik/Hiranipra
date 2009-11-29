@@ -324,7 +324,7 @@
                 this.quadDrawer = new HNGLQuadDrawer(gl);
 
                 con.beginGroup("HNMT - initializing feedback buffer")
-                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16, 2, true);
+                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16, 4, true);
                 this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
                 con.endGroup();
 
@@ -522,6 +522,9 @@
                 this.megaTextureCache.processFeedbackData(lastFrameFeedbackData, this.renderFrameNumber, this.megaTextureLoader);
             }
 
+            // ---- Pump the loader queue ----
+            this.megaTextureLoader.pump(this.renderFrameNumber);
+
             // ---- Update the graph ----
             if (this.profileGraph) {
                 var endTime = ((new Date().getTime()) - startTime);
@@ -542,7 +545,7 @@
 
 </head>
 <body onload="onLoad();">
-    <canvas id="displayCanvas" width="600" height="600"></canvas>
+    <canvas id="displayCanvas" width="1024" height="600"></canvas>
     <br />
     <br />
     <canvas id="profileGraphCanvas" style="border: 1px; border-color: grey; border-style: solid;"></canvas>
