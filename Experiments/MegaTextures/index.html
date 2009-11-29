@@ -66,7 +66,7 @@
         varying vec2 v_tex0;
         void main() {
             float x = length( a_pos ) * sin( u_time / 2.0 ) * 25.0;
-            gl_Position = ( u_viewProjMatrix * u_modelMatrix ) * vec4( a_pos.x, sin( x / 2.0 ) * 20.0, a_pos.z, 1.0 );
+            gl_Position = ( u_viewProjMatrix * u_modelMatrix ) * vec4( a_pos.x, sin( x / 2.0 ) * 50.0, a_pos.z, 1.0 );
             v_tex0 = a_tex0;
         }
     </script>
@@ -101,6 +101,7 @@
             }
 
             this.drawDebugHUD = true;
+            this.drawGrid = true;
 
             this.displayCanvas = displayCanvas;
             this.keyboard = new HNKeyboard();
@@ -129,56 +130,78 @@
             this.timer.start();
         }
 
-        app.loadAssets = function() {
+        app.switchToTexture = function(n) {
             var gl = app.gl;
             try {
-                con.beginGroup("App - loading assets");
-
-                this.grid = new HNGLGrid(gl, 25, 100);
-                this.quadDrawer = new HNGLQuadDrawer(gl);
+                con.beginGroup("App - switching to texture " + n);
 
                 con.beginGroup("App - initializing a debug megatexture");
-                if (false) {
-                    this.megaTexture = new HNDeepZoomMegaTexture(
-                        255,
-                        '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
-                        "http://content.seadragon.com/content/images/CarinaNebula.dzi"
-                    );
-                } else if (true) {
-                    this.megaTexture = new HNDeepZoomMegaTexture(
-                        255,
-                        '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
-                        "http://content.seadragon.com/content/images/cjplastic.dzi"
-                    );
-                } else {
-                    this.megaTexture = new HNTestMegaTexture(255, 65536, 65536, 254, 1);
+                switch (n) {
+                    case 0:
+                        this.megaTexture = new HNDeepZoomMegaTexture(
+                            255,
+                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
+                            "http://content.seadragon.com/content/images/CarinaNebula.dzi"
+                        );
+                        break;
+                    case 1:
+                        this.megaTexture = new HNDeepZoomMegaTexture(
+                            255,
+                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
+                            "http://content.seadragon.com/content/images/cjplastic.dzi"
+                        );
+                        break;
+                    case 2:
+                        this.megaTexture = new HNDeepZoomMegaTexture(
+                            255,
+                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="23040" Height="11520"/></Image>',
+                            "http://www.seadragon.com/content/images/mars-viking.dzi"
+                        );
+                        break;
+                    case 3:
+                        this.megaTexture = new HNDeepZoomMegaTexture(
+                            255,
+                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="16384" Height="8192"/></Image>',
+                            "http://www.seadragon.com/content/images/EarthCityLights.dzi"
+                        );
+                        break;
+                    case 4:
+                        //this.megaTexture = new HNTestMegaTexture(255, 65536, 65536, 254, 1);
+                        break;
                 }
                 con.endGroup();
 
                 con.beginGroupCollapsed("HNMT - initializing megatexture loader");
+                // NOTE: normally we wouldn't do this here (1 per app, etc) - but it's easier than cleaning up requests for old textures when changing
                 this.megaTextureLoader = new HNMegaTextureLoader();
                 con.endGroup();
 
                 con.beginGroup("HNMT - initializing megatexture cache");
-                // NOTE: normally we would pick some size we know is right - here, we are taking whatever we are getting from the texture
+                // NOTE: normally this would only happen on startup, but we pull our paramteres from the loaded texture so we have to recreate
                 this.megaTextureCache = new HNMegaTextureCache(gl, this.megaTexture.tileSize, this.megaTexture.tileOverlap, 12);
-                con.endGroup();
-
-                con.beginGroup("HNMT - initializing feedback buffer")
-                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16, 2, true);
-                this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
-                con.endGroup();
-
                 this.megaTextureCache.registerMegaTexture(this.megaTexture);
-
-                con.beginGroup("App - initializing a debug object");
-                //this.obj = HNGLGeometry.quad(gl);
-                this.obj = HNGLGeometry.segmentedQuad(gl, 32);
                 con.endGroup();
+            } finally {
+                con.endGroup();
+            }
+        }
+
+        app.switchToModel = function(n) {
+            var gl = app.gl;
+            try {
+                con.beginGroup("App - switching to model " + n);
+
+                // Clear the texture cache (not required, but good for debugging)
+                this.megaTextureCache.clear();
 
                 // Create our dummy programs
-                var simplevs = $("#simple-mt-vs").text();
-                //var simplevs = $("#wavey-mt-vs").text();
+                var simplevs;
+                if (n == 2) {
+                    // 2 is wavey
+                    simplevs = $("#wavey-mt-vs").text();
+                } else {
+                    simplevs = $("#simple-mt-vs").text();
+                }
                 this.staticProgram = {
                     pass1: HNGLProgram.fromSources(gl,
                         HNMegaTextureShaders.prependPass1vs(simplevs),
@@ -215,6 +238,40 @@
                     gl.disableVertexAttribArray(this.a_pos);
                     //gl.useProgram(null);
                 };
+
+                switch (n) {
+                    case 0:
+                        this.obj = HNGLGeometry.quad(gl);
+                        break;
+                    case 1:
+                    case 2:
+                        this.obj = HNGLGeometry.segmentedQuad(gl, 32);
+                        break;
+                    case 3:
+                        // TODO: sphere
+                        this.obj = null;
+                        break;
+                }
+            } finally {
+                con.endGroup();
+            }
+        }
+
+        app.loadAssets = function() {
+            var gl = app.gl;
+            try {
+                con.beginGroup("App - loading assets");
+
+                this.grid = new HNGLGrid(gl, 25, 100);
+                this.quadDrawer = new HNGLQuadDrawer(gl);
+
+                con.beginGroup("HNMT - initializing feedback buffer")
+                this.feedbackBuffer = new HNGLFeedbackBuffer(gl, 16, 2, true);
+                this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
+                con.endGroup();
+
+                this.switchToTexture(1);
+                this.switchToModel(1);
 
                 return true;
             } finally {
@@ -264,6 +321,9 @@
             if (this.keyboard.wasPressed(72)) { // h
                 this.drawDebugHUD = !this.drawDebugHUD;
             }
+            if (this.keyboard.wasPressed(71)) { // g
+                this.drawGrid = !this.drawGrid;
+            }
             if (this.keyboard.wasPressed(46)) { // del
                 con.info("HNMT clearing all tiles from cache");
                 this.megaTextureCache.clear();
@@ -273,13 +333,32 @@
                 con.info("HNMT suppressing loads: " + this.megaTextureLoader.suppressLoads);
             }
 
-            if (this.keyboard.wasPressed(49)) { // 1
-            }
-            if (this.keyboard.wasPressed(50)) { // 2
-            }
-            if (this.keyboard.wasPressed(51)) { // 3
-            }
-            if (this.keyboard.wasPressed(52)) { // 4
+            if (this.keyboard.isDown(17)) { //ctrl
+                if (this.keyboard.wasPressed(49)) { // 1
+                    app.switchToTexture(0);
+                }
+                else if (this.keyboard.wasPressed(50)) { // 2
+                    app.switchToTexture(1);
+                }
+                else if (this.keyboard.wasPressed(51)) { // 3
+                    app.switchToTexture(2);
+                }
+                else if (this.keyboard.wasPressed(52)) { // 4
+                    app.switchToTexture(3);
+                }
+            } else {
+                if (this.keyboard.wasPressed(49)) { // 1
+                    app.switchToModel(0);
+                }
+                else if (this.keyboard.wasPressed(50)) { // 2
+                    app.switchToModel(1);
+                }
+                else if (this.keyboard.wasPressed(51)) { // 3
+                    app.switchToModel(2);
+                }
+                else if (this.keyboard.wasPressed(52)) { // 4
+                    app.switchToModel(3);
+                }
             }
 
             // ---- Update camera ----
@@ -308,7 +387,7 @@
                 gl.enable(gl.BLEND);
                 gl.enable(gl.DEPTH_TEST);
                 gl.depthFunc(gl.LEQUAL);
-                {
+                if (this.obj) {
                     this.modelStack.push();
                     this.modelStack.translate(0, 5, 0);
                     this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
@@ -335,10 +414,12 @@
             this.modelStack.loadIdentity();
 
             // ---- Debug grid ----
-            this.grid.draw(this.viewProjStack.current, 1.0);
+            if (this.drawGrid) {
+                this.grid.draw(this.viewProjStack.current, 1.0);
+            }
 
             // ---- Dummy object ----
-            {
+            if (this.obj) {
                 this.modelStack.push();
                 this.modelStack.translate(0, 5, 0);
                 this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));

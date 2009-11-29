@@ -108,10 +108,10 @@ HNGLGeometry.prototype.draw = function(attribLocations) {
 HNGLGeometry.quad = function(gl) {
     var geo = new HNGLGeometry(gl, gl.TRIANGLES, 2);
     geo.setData(0, gl.FLOAT, 3, [
-        0, 0, 0,
-        1, 0, 0,
-        0, 0, 1,
-        1, 0, 1
+        -0.5, 0, -0.5,
+        0.5, 0, -0.5,
+        -0.5, 0, 0.5,
+        0.5, 0, 0.5
     ]);
     geo.setData(1, gl.FLOAT, 2, [
         0, 0,
