@@ -76,6 +76,12 @@ HNMegaTextureCache.prototype.endUpdate = function() {
 HNMegaTextureCache.prototype.addTile = function(tile) {
     var gl = this.gl;
 
+    // texture must actually be registered
+    if (!tile.megaTexture.lookup) {
+        con.debug("attempt to add tile from unregistered megatexture - aborting");
+        return false;
+    }
+
     var key = [tile.megaTexture.uniqueId, tile.level, tile.tileX, tile.tileY].join(",");
     con.assert(!this.tiles[key], "re-adding existing tile");
 
@@ -136,7 +142,9 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
         }
     }
 
-    tileRef.megaTexture.lookup.changes.push({ op: "add", tileRef: tileRef });
+    if (tileRef.megaTexture.lookup) {
+        tileRef.megaTexture.lookup.changes.push({ op: "add", tileRef: tileRef });
+    }
 
     return true;
 }
