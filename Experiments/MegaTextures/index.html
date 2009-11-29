@@ -225,6 +225,7 @@
         app.update = function(delta) {
             this.updateInput(delta);
             this.camera.update(delta);
+            this.keyboard.endFrame();
         }
 
         app.updateInput = function(delta) {
@@ -260,9 +261,25 @@
                     this.timer.start();
                 }
             }
-            if ((this.keyboard.isDown(72))) // h
-            {
+            if (this.keyboard.wasPressed(72)) { // h
                 this.drawDebugHUD = !this.drawDebugHUD;
+            }
+            if (this.keyboard.wasPressed(46)) { // del
+                con.info("HNMT clearing all tiles from cache");
+                this.megaTextureCache.clear();
+            }
+            if (this.keyboard.wasPressed(80)) { // p
+                this.megaTextureLoader.suppressLoads = !this.megaTextureLoader.suppressLoads;
+                con.info("HNMT suppressing loads: " + this.megaTextureLoader.suppressLoads);
+            }
+
+            if (this.keyboard.wasPressed(49)) { // 1
+            }
+            if (this.keyboard.wasPressed(50)) { // 2
+            }
+            if (this.keyboard.wasPressed(51)) { // 3
+            }
+            if (this.keyboard.wasPressed(52)) { // 4
             }
 
             // ---- Update camera ----

@@ -268,6 +268,48 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
 
     return true;
 }
+HNMegaTextureCache.prototype.removeTile = function(tileRef) {
+    var key = [tileRef.megaTexture.uniqueId, tileRef.level, tileRef.tileX, tileRef.tileY].join(",");
+    delete this.tiles[key];
+    this.tileList.shift();
+    this.freeList.push(tileRef.n);
+
+    var parentRef = null;
+    if (tileRef.parent) {
+        tileRef.parent.children[(tileRef.tileY % 2) * 2 + (tileRef.tileX % 2)] = null;
+        parentRef = tileRef.parent;
+        tileRef.parent = null;
+    } else if (tileRef.level > 0) {
+        // Try really hard to find a parent - any parent
+        var tx = tileRef.tileX;
+        var ty = tileRef.tileY;
+        for (var level = tileRef.level - 1; level >= 0; level--) {
+            tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
+            parentRef = this.getTileRef(tileRef.megaTexture.uniqueId, level, tx, ty);
+            if (parentRef) {
+                break;
+            }
+        }
+    }
+    for (var n = 0; n < 4; n++) {
+        if (tileRef.children[n]) {
+            tileRef.children[n].parent = null;
+        }
+    }
+    tileRef.children = [null, null, null, null];
+
+    // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
+    this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
+
+    // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
+    if (true) {
+        var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
+        var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
+        var sw = this.totalTileSize;
+        var sh = this.totalTileSize;
+        this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
+    }
+}
 HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount) {
     //con.debug("texture cache full - removing " + requestedRemovalCount + " tiles to make room for new ones");
     this.tileList.sort(function(a, b) { return a.lastUse - b.lastUse; });
@@ -279,49 +321,17 @@ HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount)
             con.warn("texture cache thrashing");
             break;
         }
-
-        // Remove tile
-        var key = [tileRef.megaTexture.uniqueId, tileRef.level, tileRef.tileX, tileRef.tileY].join(",");
-        delete this.tiles[key];
-        this.tileList.shift();
-        this.freeList.push(tileRef.n);
-
-        var parentRef = null;
-        if (tileRef.parent) {
-            tileRef.parent.children[(tileRef.tileY % 2) * 2 + (tileRef.tileX % 2)] = null;
-            parentRef = tileRef.parent;
-            tileRef.parent = null;
-        } else if (tileRef.level > 0) {
-            // Try really hard to find a parent - any parent
-            var tx = tileRef.tileX;
-            var ty = tileRef.tileY;
-            for (var level = tileRef.level - 1; level >= 0; level--) {
-                tx = Math.floor(tx / 2); ty = Math.floor(ty / 2);
-                parentRef = this.getTileRef(tileRef.megaTexture.uniqueId, level, tx, ty);
-                if (parentRef) {
-                    break;
-                }
-            }
-        }
-        for (var n = 0; n < 4; n++) {
-            if (tileRef.children[n]) {
-                tileRef.children[n].parent = null;
-            }
-        }
-        tileRef.children = [null, null, null, null];
-
-        // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
-        this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
-
-        // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
-        if (true) {
-            var sx = Math.floor(tileRef.n % this.tilesPerSide) * this.totalTileSize;
-            var sy = Math.floor(tileRef.n / this.tilesPerSide) * this.totalTileSize;
-            var sw = this.totalTileSize;
-            var sh = this.totalTileSize;
-            this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
-        }
+        this.removeTile(tileRef);
     }
+}
+HNMegaTextureCache.prototype.clear = function() {
+    this.beginUpdate(this.renderFrameNumber);
+    var tileList = this.tileList.slice(); // clone
+    for (var n = 0; n < tileList.length; n++) {
+        var tileRef = tileList[n];
+        this.removeTile(tileRef);
+    }
+    this.endUpdate();
 }
 HNMegaTextureCache.prototype.getTileRef = function(megaTextureId, level, tileX, tileY) {
     var key = [megaTextureId, level, tileX, tileY].join(",");

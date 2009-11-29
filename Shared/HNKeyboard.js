@@ -1,5 +1,6 @@
 var HNKeyboard = function() {
-    this.pressedKeys = new Object();
+    this.pressedKeys = [];
+    this.latchedKeys = [];
     this.takeFocus();
 }
 // TODO: preserve previous handlers
@@ -33,20 +34,28 @@ HNKeyboard.prototype.loseFocus = function() {
     document.onkeyup = null;
 }
 HNKeyboard.prototype.onKeyDown = function(e) {
-//    if (!this.pressedKeys[e.keyCode]) {
-//        con.debug("key down " + e.keyCode);
-//    }
+    //if (!this.pressedKeys[e.keyCode]) {
+    //    con.debug("key down " + e.keyCode);
+    //}
     this.pressedKeys[e.keyCode] = true;
 }
 HNKeyboard.prototype.onKeyUp = function(e) {
-//    if (this.pressedKeys[e.keyCode]) {
-//        con.debug("key up " + e.keyCode);
-//    }
+    //if (this.pressedKeys[e.keyCode]) {
+    //    con.debug("key up " + e.keyCode);
+    //}
     this.pressedKeys[e.keyCode] = false;
+    this.latchedKeys[e.keyCode] = true;
 }
 HNKeyboard.prototype.clear = function() {
-    this.pressedKeys = new Object();
+    this.pressedKeys = [];
+    this.latchedKeys = [];
 }
 HNKeyboard.prototype.isDown = function(keyCode) {
     return this.pressedKeys[keyCode];
+}
+HNKeyboard.prototype.endFrame = function() {
+    this.latchedKeys = [];
+}
+HNKeyboard.prototype.wasPressed = function(keyCode) {
+    return this.latchedKeys[keyCode];
 }

@@ -4,9 +4,13 @@
 
 var HNMegaTextureLoader = function() {
     con.info("loader setup");
+    this.suppressLoads = false;
+
     // map of texture/level/x/y to HNMegaTextureTileRef
     this.pendingTiles = {};
     this.completedTiles = {};
+    this.inflightRequests = [];
+    this.pendingRequests = [];
 
     var me = this;
     this.worker = new Worker("HNMegaTextureLoader-Worker.js");
@@ -77,6 +81,9 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
     return tile;
 }
 HNMegaTextureLoader.prototype.getCompletedTiles = function(max, renderFrameNumber) {
+    if (this.suppressLoads) {
+        return [];
+    }
     var completedTiles = [];
     var removalKeys = [];
     for (var key in this.completedTiles) {
