@@ -24,8 +24,8 @@ HNMegaTextureShaders.pass1fs = [
 HNMegaTextureShaders.pass2vs = "";
 HNMegaTextureShaders.pass2fs = [
 // TODO: split out
-"uniform vec4 u_mt_texCache;",  // [ cache width, cache height, quadtree width, quadtree height ]
-"uniform vec4 u_mt_slot;",      // [ slot u, slot v, tile overlap, maxLevel ]
+"uniform vec4 u_mt_texCache;",  // [ cache width, cache height, xx, xx ]
+"uniform vec4 u_mt_texLookup;", // [ qt width, qt height, tileOverlap, maxLevel ]
 "uniform sampler2D s_mt_lookup;",
 "uniform sampler2D s_mt_texCache;",
 "vec4 MTSampleLevel( const in vec2 uv, const in float level ) {",
@@ -34,21 +34,21 @@ HNMegaTextureShaders.pass2fs = [
 "   vec2 texTSf = texLS / u_mt_tex.z;",                     // -> [0->tileswide]x[0-tileshigh] (fractional)
 "   vec2 texTS = floor( texTSf );",
 "   // Find offset in quad tree for the tile we want",
-"   vec2 qtoff = u_mt_slot.xy + vec2( exp2( u_mt_slot.w - level ) + texTS.x, texTS.y ) / u_mt_texCache.zw;",
+"   vec2 qtoff = vec2( exp2( u_mt_texLookup.w - level ) + texTS.x, texTS.y ) / u_mt_texLookup.xy;",
 "   // Sample from quad tree to find tile data",
 "   vec4 tile = texture2D( s_mt_lookup, qtoff );",
 "   // Calculate the tile's texture coordinates in the cache texture",
 "   vec2 tadj = fract( texTSf / ( tile.z * 255.0 ) );",
-"   vec2 tcoff = ( tile.xy * 255.0 * ( u_mt_tex.z + u_mt_slot.z * 2.0 ) + ( tadj * u_mt_tex.z + u_mt_slot.z ) ) / u_mt_texCache.xy;",
+"   vec2 tcoff = ( tile.xy * 255.0 * ( u_mt_tex.z + u_mt_texLookup.z * 2.0 ) + ( tadj * u_mt_tex.z + u_mt_texLookup.z ) ) / u_mt_texCache.xy;",
 "   // Sample the tile cache",
 "   return texture2D( s_mt_texCache, vec2( tcoff.x, 1.0 - tcoff.y ) );",
 "}",
 "vec4 MTSampleBilinear( const in vec2 uv ) {",
-"   float level = clamp( floor( MTCalculateMipLevel( uv, 0.0 ) ), 0.0, u_mt_slot.w );",
+"   float level = clamp( floor( MTCalculateMipLevel( uv, 0.0 ) ), 0.0, u_mt_texLookup.w );",
 "   return MTSampleLevel( uv, level );",
 "}",
 "vec4 MTSampleTrilinear( const in vec2 uv ) {",
-"   float levelf = clamp( MTCalculateMipLevel( uv, 0.0 ), 0.0, u_mt_slot.w );",
+"   float levelf = clamp( MTCalculateMipLevel( uv, 0.0 ), 0.0, u_mt_texLookup.w );",
 "   float level = floor( levelf );",
 "   vec4 l0 = MTSampleLevel( uv, level );",
 "   vec4 l1 = MTSampleLevel( uv, level + 1.0 );",

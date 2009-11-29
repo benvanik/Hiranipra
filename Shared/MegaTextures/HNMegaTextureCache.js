@@ -228,8 +228,8 @@ HNMegaTextureCache.prototype.setPass1Uniforms = function(program, feedbackBuffer
 HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
     var gl = this.gl;
     gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
-    gl.uniform4f(program.u_mt_texCache, this.width, this.height, megaTexture.lookup.width, megaTexture.lookup.height);
-    gl.uniform4f(program.u_mt_slot, 0, 0, this.tileOverlap, megaTexture.maxLevel);
+    gl.uniform4f(program.u_mt_texCache, this.width, this.height, 0, 0);
+    gl.uniform4f(program.u_mt_texLookup, megaTexture.lookup.width, megaTexture.lookup.height, megaTexture.tileOverlap, megaTexture.maxLevel);
     gl.uniform1i(program.s_mt_lookup, 0);
     gl.uniform1i(program.s_mt_texCache, 1);
     gl.activeTexture(gl.TEXTURE0);
