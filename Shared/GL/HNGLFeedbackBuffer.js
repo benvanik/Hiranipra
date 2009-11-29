@@ -7,11 +7,16 @@ var HNGLFeedbackBuffer = function(gl, downsample, updateInterval, useDepth) {
     this.pixels = null;
 
     this.framebuffer = gl.createFramebuffer();
+    this.depthBuffer = gl.createRenderbuffer();
 }
 HNGLFeedbackBuffer.prototype.dispose = function() {
     var gl = this.gl;
     gl.deleteTexture(this.texture);
     this.texture = null;
+    if (this.depthBuffer) {
+        gl.deleteRenderbuffer(this.depthBuffer);
+        this.depthBuffer = null;
+    }
     gl.deleteFramebuffer(this.framebuffer);
     this.framebuffer = null;
     this.gl = null;
@@ -41,8 +46,10 @@ HNGLFeedbackBuffer.prototype.resize = function(viewportWidth, viewportHeight) {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     if (this.useDepth) {
-        // TODO: depth attachment
-        con.warn("depth buffer on feedback buffer is not yet supported!");
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthBuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthBuffer);
     }
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
