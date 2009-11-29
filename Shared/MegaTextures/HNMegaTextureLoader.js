@@ -37,7 +37,6 @@ HNMegaTextureLoader.prototype.tileSucceeded = function(tile) {
     if (index >= 0) {
         this.inFlightRequests.remove(index);
     }
-    this.pump();
 }
 HNMegaTextureLoader.prototype.tileFailed = function(tile) {
     con.error("tile load failed " + tile.level + "@" + tile.tileX + "," + tile.tileY);
@@ -47,7 +46,6 @@ HNMegaTextureLoader.prototype.tileFailed = function(tile) {
     if (index >= 0) {
         this.inFlightRequests.remove(index);
     }
-    this.pump();
 }
 HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY) {
     var key = [megaTexture.uniqueId, level, tileX, tileY].join(",");
