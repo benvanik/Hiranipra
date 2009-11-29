@@ -24,7 +24,7 @@ var HNMegaTextureLookup = function(textureCache, megaTexture) {
     this.width = Math.pow(2, this.maxLevel) * 2;
     this.height = Math.pow(2, this.maxLevel);
     this.stride = this.width * 3;
-    con.info("lookup table " + this.width + "x" + this.height + " (" + (this.width * this.height * 3) + "b) with " + 1 + " slots each up to level " + this.maxLevel);
+    con.info("lookup table " + this.width + "x" + this.height + " (" + (this.width * this.height * 3) + "b) with up to level " + this.maxLevel);
 
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -54,7 +54,14 @@ HNMegaTextureLookup.prototype.endUpdate = function() {
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
 HNMegaTextureLookup.prototype.fillTileLevel = function(level, lx, ly, lw, ls, tx, ty) {
-    var dataIndex = (1 << level) * 3;
+    var levelWidth = 1 << level;
+    lw = Math.min(lw, levelWidth - Math.max(lx, ly));
+    if (lw <= 0) {
+        // Address is bogus - abort - this happens with poorly constructed images
+        // TODO: figure out *why* it happens, this is an ugly hack
+        return;
+    }
+    var dataIndex = levelWidth * 3;
     dataIndex += (ly * this.stride) + (lx * 3);
     for (var y = ly; y < ly + lw; y++) {
         var rowIndex = dataIndex;
@@ -80,7 +87,7 @@ HNMegaTextureLookup.prototype.recursiveFillTile = function(tileRef) {
                 // Child is already filled (probably) - skip it
             } else {
                 // Fill child with self (and all levels below it)
-                for (var level = tileRef.level + 1; level <= tileRef.megaTexture.maxLevel; level++) {
+                for (var level = tileRef.level + 1; level <= this.maxLevel; level++) {
                     var levelDiff = level - tileRef.level;
                     var lw = (1 << levelDiff);
                     var lwh = Math.floor(lw / 2);
@@ -98,7 +105,7 @@ HNMegaTextureLookup.prototype.recursiveFillTile = function(tileRef) {
         }
     } else {
         // Leaf node in the quad tree - fill all children in (and all levels below us)
-        for (var level = tileRef.level + 1; level <= tileRef.megaTexture.maxLevel; level++) {
+        for (var level = tileRef.level + 1; level <= this.maxLevel; level++) {
             var levelDiff = level - tileRef.level;
             var lx = tileRef.tileX << levelDiff;
             var ly = tileRef.tileY << levelDiff;
@@ -113,7 +120,7 @@ HNMegaTextureLookup.prototype.processChanges = function() {
     }
 
     this.beginUpdate();
-    
+
     // TODO: ensure we aren't adding AND removing a tile in the same frame (not possible?)
     for (var n = 0; n < this.changes.length; n++) {
         //changedTiles[n].op == "add" "refresh"
