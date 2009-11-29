@@ -242,14 +242,24 @@
                 switch (n) {
                     case 0:
                         this.obj = HNGLGeometry.quad(gl);
+                        this.objMatrix = HNMatrix4x4.T(0, 5, 0);
+                        this.objMatrix.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                        this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
+                        this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 1:
                     case 2:
                         this.obj = HNGLGeometry.segmentedQuad(gl, 32);
+                        this.objMatrix = HNMatrix4x4.T(0, 5, 0);
+                        this.objMatrix.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                        this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
+                        this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 3:
-                        // TODO: sphere
-                        this.obj = null;
+                        this.obj = HNGLGeometry.sphere(gl, 1, 64, 64);
+                        this.objMatrix = HNMatrix4x4.S(1000, 1000, 1000);
+                        this.camera.setPosition(880.3470689355484, -550.242265922766, 1420.1244651797983);
+                        this.camera.setYawPitchRoll(-8.884424024351938, -0.32358404331974866, 0);
                         break;
                 }
             } finally {
@@ -270,8 +280,8 @@
                 this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
                 con.endGroup();
 
-                this.switchToTexture(1);
-                this.switchToModel(1);
+                this.switchToTexture(2);
+                this.switchToModel(3);
 
                 return true;
             } finally {
@@ -388,9 +398,7 @@
                 gl.enable(gl.DEPTH_TEST);
                 gl.depthFunc(gl.LEQUAL);
                 if (this.obj) {
-                    this.modelStack.push();
-                    this.modelStack.translate(0, 5, 0);
-                    this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                    this.modelStack.push(this.objMatrix);
                     this.staticProgram.pass1.begin(this.viewProjStack.current, this.modelStack.current);
                     this.megaTextureCache.setPass1Uniforms(this.staticProgram.pass1, this.feedbackBuffer, this.megaTexture);
                     this.obj.draw([this.staticProgram.pass1.a_pos, this.staticProgram.pass1.a_tex0]);
@@ -420,9 +428,7 @@
 
             // ---- Dummy object ----
             if (this.obj) {
-                this.modelStack.push();
-                this.modelStack.translate(0, 5, 0);
-                this.modelStack.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                this.modelStack.push(this.objMatrix);
                 this.staticProgram.pass2.begin(this.viewProjStack.current, this.modelStack.current);
                 this.megaTextureCache.setPass2Uniforms(this.staticProgram.pass2, this.megaTexture);
                 this.obj.draw([this.staticProgram.pass2.a_pos, this.staticProgram.pass2.a_tex0]);

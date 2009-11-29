@@ -167,3 +167,64 @@ HNGLGeometry.segmentedQuad = function(gl, segments) {
     geo.setIndices(indices);
     return geo;
 }
+
+// From the Apple utils3d.js file released with their demos:
+// http://trac.webkit.org/browser/trunk/WebKitSite/blog-files/webgl/resources/utils3d.js?format=txt
+HNGLGeometry.sphere = function(gl, radius, lats, longs) {
+    var positions = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);
+    var texCoords = new WebGLFloatArray((lats + 1) * (longs + 1) * 2 * 2);
+    var normals = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);
+    var indexCount = lats * longs * 6 * 2;
+    var indices = new WebGLUnsignedShortArray(indexCount);
+
+    var positionIndex = 0;
+    var texCoordIndex = 0;
+    var normalIndex = 0;
+    for (var latNumber = 0; latNumber <= lats; ++latNumber) {
+        for (var longNumber = 0; longNumber <= longs; ++longNumber) {
+            var theta = latNumber * Math.PI / lats;
+            var phi = longNumber * 2 * Math.PI / longs;
+            var sinTheta = Math.sin(theta);
+            var sinPhi = Math.sin(phi);
+            var cosTheta = Math.cos(theta);
+            var cosPhi = Math.cos(phi);
+
+            var x = cosPhi * sinTheta;
+            var y = cosTheta;
+            var z = sinPhi * sinTheta;
+            var u = 1 - (longNumber / longs);
+            var v = latNumber / lats;
+
+            positions[positionIndex++] = radius * x;
+            positions[positionIndex++] = radius * y;
+            positions[positionIndex++] = radius * z;
+            texCoords[texCoordIndex++] = u;
+            texCoords[texCoordIndex++] = v;
+            normals[normalIndex++] = x;
+            normals[normalIndex++] = y;
+            normals[normalIndex++] = z;
+        }
+    }
+
+    longs += 1;
+    var indicesIndex = 0;
+    for (var latNumber = 0; latNumber < lats; ++latNumber) {
+        for (var longNumber = 0; longNumber < longs; ++longNumber) {
+            var first = (latNumber * longs) + (longNumber % longs);
+            var second = first + longs;
+            indices[indicesIndex++] = first;
+            indices[indicesIndex++] = second;
+            indices[indicesIndex++] = first + 1;
+            indices[indicesIndex++] = second;
+            indices[indicesIndex++] = second + 1;
+            indices[indicesIndex++] = first + 1;
+        }
+    }
+
+    var geo = new HNGLGeometry(gl, gl.TRIANGLES, indexCount / 3);
+    geo.setData(0, gl.FLOAT, 3, positions);
+    geo.setData(1, gl.FLOAT, 2, texCoords);
+    //geo.setData(2, gl.FLOAT, 3, normal);
+    geo.setIndices(indices);
+    return geo;
+}
