@@ -122,7 +122,9 @@ HNMegaTextureLookup.prototype.processChanges = function(changedTiles) {
             this.recursiveFillTile(slot, tileRef);
         } else {
             var slot = changedTiles[n].slot;
-            con.warn("would clear entire slot here");
+            // Clear the entire slot
+            // Note that there is probably a better way
+            this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
         }
     }
 }
@@ -381,7 +383,7 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
     }
 }
 HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {
-    var lastTexId = 0, lastLevel = 0, lastTileX = 0, lastTileY = 0;
+    var lastTexId = -1, lastLevel = 0, lastTileX = 0, lastTileY = 0;
     var pixelIndex = 0;
     for (var yy = 0; yy < feedbackData.height; yy++) {
         for (var xx = 0; xx < feedbackData.width; xx++, pixelIndex += 4) {
@@ -407,7 +409,10 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
                 tileRef.touch(renderFrameNumber);
             } else {
                 megaTexture = this.megaTextures[texId];
-                //con.assert(megaTexture, "megatexture not found - either not registered or bogus data");
+                if (!megaTexture) {
+                    // texture not found - that's bad!
+                    continue;
+                }
                 var tile = loader.queue(megaTexture, level, tileX, tileY);
                 tile.lastUse = renderFrameNumber;
             }

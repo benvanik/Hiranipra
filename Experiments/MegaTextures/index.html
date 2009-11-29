@@ -130,60 +130,79 @@
             this.timer.start();
         }
 
-        app.switchToTexture = function(textureNumber) {
+        app.loadMegaTexture = function(textureNumber) {
             var gl = app.gl;
             try {
-                con.beginGroup("App - switching to texture " + textureNumber);
-
-                con.beginGroup("App - initializing a debug megatexture");
-                switch (textureNumber) {
-                    case 0:
-                        this.megaTexture = new HNDeepZoomMegaTexture(
-                            255,
-                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
-                            "http://content.seadragon.com/content/images/CarinaNebula.dzi"
-                        );
-                        break;
-                    case 1:
-                        this.megaTexture = new HNDeepZoomMegaTexture(
-                            255,
-                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
-                            "http://content.seadragon.com/content/images/cjplastic.dzi"
-                        );
-                        break;
-                    case 2:
-                        this.megaTexture = new HNDeepZoomMegaTexture(
-                            255,
-                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="23040" Height="11520"/></Image>',
-                            "http://www.seadragon.com/content/images/mars-viking.dzi"
-                        );
-                        break;
-                    case 3:
-                        this.megaTexture = new HNDeepZoomMegaTexture(
-                            255,
-                            '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="16384" Height="8192"/></Image>',
-                            "http://www.seadragon.com/content/images/EarthCityLights.dzi"
-                        );
-                        break;
-                    case 4:
-                        //this.megaTexture = new HNTestMegaTexture(255, 65536, 65536, 254, 1);
-                        break;
-                }
-                con.endGroup();
-
-                con.beginGroupCollapsed("HNMT - initializing megatexture loader");
-                // NOTE: normally we wouldn't do this here (1 per app, etc) - but it's easier than cleaning up requests for old textures when changing
-                this.megaTextureLoader = new HNMegaTextureLoader();
-                con.endGroup();
-
-                con.beginGroup("HNMT - initializing megatexture cache");
-                // NOTE: normally this would only happen on startup, but we pull our paramteres from the loaded texture so we have to recreate
-                this.megaTextureCache = new HNMegaTextureCache(gl, this.megaTexture.tileSize, this.megaTexture.tileOverlap, 12);
-                this.megaTextureCache.registerMegaTexture(this.megaTexture);
-                con.endGroup();
+                con.beginGroup("App - loading texture " + textureNumber);
             } finally {
                 con.endGroup();
             }
+        }
+
+        app.loadMegaTextures = function(textureNumbers) {
+            var gl = app.gl;
+            try {
+                con.beginGroup("App - loading textures " + textureNumbers.toString());
+
+                // Cleanup all textures
+                for (var n = 0; n < this.megaTextures.length; n++) {
+                    var megaTexture = this.megaTextures[n];
+                    this.megaTextureCache.unregisterMegaTexture(megaTexture);
+                }
+                this.megaTextures = [];
+
+                for (var n = 0; n < textureNumbers.length; n++) {
+                    var megaTexture = null;
+                    switch (textureNumbers[n]) {
+                        case 0:
+                            megaTexture = new HNDeepZoomMegaTexture(
+                                244,
+                                '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
+                                "http://content.seadragon.com/content/images/CarinaNebula.dzi"
+                            );
+                            break;
+                        case 1:
+                            megaTexture = new HNDeepZoomMegaTexture(
+                                245,
+                                '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
+                                "http://content.seadragon.com/content/images/cjplastic.dzi"
+                            );
+                            break;
+                        case 2:
+                            megaTexture = new HNDeepZoomMegaTexture(
+                                246,
+                                '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="23040" Height="11520"/></Image>',
+                                "http://www.seadragon.com/content/images/mars-viking.dzi"
+                            );
+                            break;
+                        case 3:
+                            megaTexture = new HNDeepZoomMegaTexture(
+                                247,
+                                '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="16384" Height="8192"/></Image>',
+                                "http://www.seadragon.com/content/images/EarthCityLights.dzi"
+                            );
+                            break;
+                        case 4:
+                            //megaTexture = new HNTestMegaTexture(255, 65536, 65536, 254, 1);
+                            break;
+                    }
+                    if (megaTexture == null) {
+                        return;
+                    }
+                    this.megaTextureCache.registerMegaTexture(megaTexture);
+                    this.megaTextures.push(megaTexture);
+                }
+            } finally {
+                con.endGroup();
+            }
+        }
+
+        app.switchToTexture = function(textureNumber) {
+            this.loadMegaTextures([textureNumber]);
+            for (var n = 0; n < this.objs.length; n++) {
+                this.objs[n].megaTexture = this.megaTextures[0];
+            }
+            this.megaTextureCache.clear();
         }
 
         app.switchToScene = function(modelNumber) {
@@ -248,35 +267,39 @@
                 this.objMatrices = [];
                 switch (modelNumber) {
                     case 0:
+                        this.loadMegaTextures([0]);
                         var obj = HNGLGeometry.quad(gl);
-                        obj.megaTexture = this.megaTexture;
+                        obj.megaTexture = this.megaTextures[0];
                         this.objs.push(obj);
-                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height)));
+                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (obj.megaTexture.width / obj.megaTexture.height)));
                         this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
                         this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 1:
                     case 2:
+                        this.loadMegaTextures([1]);
                         var obj = HNGLGeometry.segmentedQuad(gl, 32);
-                        obj.megaTexture = this.megaTexture;
+                        obj.megaTexture = this.megaTextures[0];
                         this.objs.push(obj);
-                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height)));
+                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (obj.megaTexture.width / obj.megaTexture.height)));
                         this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
                         this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 3:
+                        this.loadMegaTextures([2]);
                         var obj = HNGLGeometry.sphere(gl, 1, 64, 64);
-                        obj.megaTexture = this.megaTexture;
+                        obj.megaTexture = this.megaTextures[0];
                         this.objs.push(obj);
                         this.objMatrices.push(HNMatrix4x4.S(1000, 1000, 1000));
                         this.camera.setPosition(880.3470689355484, -550.242265922766, 1420.1244651797983);
                         this.camera.setYawPitchRoll(-8.884424024351938, -0.32358404331974866, 0);
                         break;
                     case 4:
+                        this.loadMegaTextures([2, 3]);
                         var s1 = HNGLGeometry.sphere(gl, 1, 64, 64);
-                        s1.megaTexture = this.megaTexture;
+                        s1.megaTexture = this.megaTextures[0];
                         var s2 = HNGLGeometry.sphere(gl, 1, 64, 64);
-                        s2.megaTexture = this.megaTexture;
+                        s2.megaTexture = this.megaTextures[0];
                         this.objs.push(s1);
                         this.objs.push(s2);
                         this.objMatrices.push(HNMatrix4x4.S(1000, 1000, 1000));
@@ -303,7 +326,17 @@
                 this.feedbackBuffer.resize(this.displayCanvas.width, this.displayCanvas.height);
                 con.endGroup();
 
-                this.switchToTexture(2);
+                con.beginGroupCollapsed("HNMT - initializing megatexture loader");
+                this.megaTextureLoader = new HNMegaTextureLoader();
+                con.endGroup();
+
+                con.beginGroup("HNMT - initializing megatexture cache");
+                // TODO: maybe use 512x512/1?
+                this.megaTextureCache = new HNMegaTextureCache(gl, 254, 1, 12);
+                con.endGroup();
+
+                this.megaTextures = [];
+                this.objs = [];
                 this.switchToScene(4);
 
                 return true;
@@ -420,7 +453,7 @@
 
                 gl.clearColor(0, 0, 0, 0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                gl.enable(gl.BLEND);
+                gl.disable(gl.BLEND);
                 gl.enable(gl.DEPTH_TEST);
                 gl.depthFunc(gl.LEQUAL);
                 for (var n = 0; n < this.objs.length; n++) {
