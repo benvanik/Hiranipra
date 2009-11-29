@@ -36,18 +36,12 @@ var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
     this.tiles = {};
     this.tileList = [];
 
-    // Lists of tiles picked up through update
-    this.changedTiles = [];
-
-    this.lookup = new HNMegaTextureLookup(this);
     this.megaTextures = {};
 
     this.quadDrawer = new HNGLQuadDrawer(gl);
 }
 HNMegaTextureCache.prototype.dispose = function() {
     var gl = this.gl;
-    this.lookup.dispose();
-    this.lookup = null;
     this.quadDrawer.dispose();
     this.quadDrawer = null;
     gl.deleteTexture(this.texture);
@@ -59,9 +53,12 @@ HNMegaTextureCache.prototype.dispose = function() {
 HNMegaTextureCache.prototype.registerMegaTexture = function(megaTexture) {
     con.info("HNMegaTextureCache registered texture " + megaTexture.uniqueId);
     this.megaTextures[megaTexture.uniqueId] = megaTexture;
-    // TODO: expand lookup/assign slot/etc?
+    megaTexture.lookup = new HNMegaTextureLookup(this, megaTexture);
 }
 HNMegaTextureCache.prototype.unregisterMegaTexture = function(megaTexture) {
+    // TODO: remove all tiles from self that are in the lookup
+    megaTexture.lookup.dispose();
+    megaTexture.lookup = null;
     delete this.megaTextures[megaTexture.uniqueId];
     con.info("HNMegaTextureCache unregistered texture " + megaTexture.uniqueId);
 }
@@ -139,12 +136,12 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
         }
     }
 
-    this.changedTiles.push({ op: "add", tileRef: tileRef });
+    tileRef.megaTexture.lookup.changes.push({ op: "add", tileRef: tileRef });
 
     return true;
 }
 HNMegaTextureCache.prototype.removeTile = function(tileRef) {
-    var key = [tileRef.megaTexture.uniqueId, tileRef.level, tileRef.tileX, tileRef.tileY].join(",");
+    var key = tileRef.key;
     delete this.tiles[key];
     this.tileList.shift();
     this.freeList.push(tileRef.n);
@@ -173,8 +170,11 @@ HNMegaTextureCache.prototype.removeTile = function(tileRef) {
     }
     tileRef.children = [null, null, null, null];
 
-    // Queue up lookup change - note that it's ok if parent is null here, as it means refresh the entire slot
-    this.changedTiles.push({ op: "refresh", tileRef: parentRef, slot: tileRef.slot });
+    // Queue up lookup change - but it only matters if we HAVE a lookup (on removal, we may not)
+    if (tileRef.megaTexture.lookup) {
+        // NOTE: it's ok if parent is null here, as it means refresh the entire slot
+        tileRef.megaTexture.lookup.changes.push({ op: "refresh", tileRef: parentRef });
+    }
 
     // Draw black over the slot (needed so subregion updates/etc don't get border artifacts)
     if (true) {
@@ -220,12 +220,12 @@ HNMegaTextureCache.prototype.setPass1Uniforms = function(program, feedbackBuffer
 HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
     var gl = this.gl;
     gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
-    gl.uniform4f(program.u_mt_texCache, this.width, this.height, this.lookup.width, this.lookup.height);
+    gl.uniform4f(program.u_mt_texCache, this.width, this.height, megaTexture.lookup.width, megaTexture.lookup.height);
     gl.uniform4f(program.u_mt_slot, 0, 0, this.tileOverlap, 0);
     gl.uniform1i(program.s_mt_lookup, 0);
     gl.uniform1i(program.s_mt_texCache, 1);
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.lookup.texture);
+    gl.bindTexture(gl.TEXTURE_2D, megaTexture.lookup.texture);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.activeTexture(gl.TEXTURE0);
@@ -246,13 +246,11 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
 
     }
 
-    // Update the quad tree if required
+    // Update the quad trees if required
     // TODO: only update every few frames if just adds - removes have to be done right away, though
-    if (this.changedTiles.length) {
-        this.lookup.beginUpdate();
-        this.lookup.processChanges(this.changedTiles);
-        this.lookup.endUpdate();
-        this.changedTiles = [];
+    for (var uniqueId in this.megaTextures) {
+        var megaTexture = this.megaTextures[uniqueId];
+        megaTexture.lookup.processChanges();
     }
 }
 HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {

@@ -5,6 +5,7 @@ var HNMegaTextureTileRef = function(tile) {
     this.tileY = tile.tileY;
     this.parent = null;
     this.children = [null, null, null, null];
+    this.key = [this.megaTexture.uniqueId, this.level, this.tileX, this.tileY].join(",");
 }
 HNMegaTextureTileRef.prototype.bindToSlot = function(n, width, height) {
     this.n = n;
@@ -15,12 +16,11 @@ HNMegaTextureTileRef.prototype.touch = function(frameNumber) {
     this.lastUse = frameNumber;
 }
 
-var HNMegaTextureLookup = function(textureCache) {
+var HNMegaTextureLookup = function(textureCache, megaTexture) {
     this.textureCache = textureCache;
     var gl = this.textureCache.gl;
 
-    // TODO: size lookup properly
-    this.maxLevel = 8;
+    this.maxLevel = megaTexture.maxLevel;
     this.width = Math.pow(2, this.maxLevel) * 2;
     this.height = Math.pow(2, this.maxLevel);
     this.stride = this.width * 3;
@@ -36,6 +36,7 @@ var HNMegaTextureLookup = function(textureCache) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
+    this.changes = [];
 }
 HNMegaTextureLookup.prototype.dispose = function() {
     var gl = this.textureCache.gl;
@@ -52,9 +53,8 @@ HNMegaTextureLookup.prototype.endUpdate = function() {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.width, this.height, 0, gl.RGB, gl.UNSIGNED_BYTE, this.data);
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
-HNMegaTextureLookup.prototype.fillTileLevel = function(slot, level, lx, ly, lw, ls, tx, ty) {
-    var dataIndex = 0; // TODO: slot offset
-    dataIndex += (1 << level) * 3;
+HNMegaTextureLookup.prototype.fillTileLevel = function(level, lx, ly, lw, ls, tx, ty) {
+    var dataIndex = (1 << level) * 3;
     dataIndex += (ly * this.stride) + (lx * 3);
     for (var y = ly; y < ly + lw; y++) {
         var rowIndex = dataIndex;
@@ -66,11 +66,11 @@ HNMegaTextureLookup.prototype.fillTileLevel = function(slot, level, lx, ly, lw, 
         dataIndex += this.stride;
     }
 }
-HNMegaTextureLookup.prototype.recursiveFillTile = function(slot, tileRef) {
+HNMegaTextureLookup.prototype.recursiveFillTile = function(tileRef) {
     // Fill self in
     var tx = Math.floor(tileRef.n % this.textureCache.tilesPerSide);
     var ty = Math.floor(tileRef.n / this.textureCache.tilesPerSide);
-    this.fillTileLevel(slot, tileRef.level, tileRef.tileX, tileRef.tileY, 1, 1, tx, ty);
+    this.fillTileLevel(tileRef.level, tileRef.tileX, tileRef.tileY, 1, 1, tx, ty);
 
     if (tileRef.children[0] || tileRef.children[1] || tileRef.children[2] || tileRef.children[3]) {
         // At least one child exists - slow fill each quadrant (through the pyramid)
@@ -92,7 +92,7 @@ HNMegaTextureLookup.prototype.recursiveFillTile = function(slot, tileRef) {
                         case 2: ly += lwh; break;
                         case 3: lx += lwh; ly += lwh; break;
                     }
-                    this.fillTileLevel(slot, level, lx, ly, lwh, lw, tx, ty);
+                    this.fillTileLevel(level, lx, ly, lwh, lw, tx, ty);
                 }
             }
         }
@@ -103,24 +103,30 @@ HNMegaTextureLookup.prototype.recursiveFillTile = function(slot, tileRef) {
             var lx = tileRef.tileX << levelDiff;
             var ly = tileRef.tileY << levelDiff;
             var lw = 1 << levelDiff;
-            this.fillTileLevel(slot, level, lx, ly, lw, lw, tx, ty);
+            this.fillTileLevel(level, lx, ly, lw, lw, tx, ty);
         }
     }
 }
-HNMegaTextureLookup.prototype.processChanges = function(changedTiles) {
+HNMegaTextureLookup.prototype.processChanges = function() {
+    if (this.changes.length == 0) {
+        return;
+    }
+
+    this.beginUpdate();
+    
     // TODO: ensure we aren't adding AND removing a tile in the same frame (not possible?)
-    for (var n = 0; n < changedTiles.length; n++) {
-        //changedTiles[n].op == "add" "remove"
-        if (changedTiles[n].tileRef) {
-            // Refresh
-            var tileRef = changedTiles[n].tileRef;
-            var slot = 0; // TODO: slots
-            this.recursiveFillTile(slot, tileRef);
+    for (var n = 0; n < this.changes.length; n++) {
+        //changedTiles[n].op == "add" "refresh"
+        if (this.changes[n].tileRef) {
+            // Refresh tile
+            this.recursiveFillTile(this.changes[n].tileRef);
         } else {
-            var slot = changedTiles[n].slot;
             // Clear the entire slot
             // Note that there is probably a better way
             this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
         }
     }
+
+    this.endUpdate();
+    this.changes = [];
 }

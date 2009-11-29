@@ -36,7 +36,7 @@
     <script type="text/javascript" src="../../Shared/GL/HNGLGeometry.js"></script>
 
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureTile.js"></script>
-    
+
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureLookup.js"></script>
 
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTexture.js"></script>
@@ -301,7 +301,7 @@
                         var s1 = HNGLGeometry.sphere(gl, 1, 64, 64);
                         s1.megaTexture = this.megaTextures[0];
                         var s2 = HNGLGeometry.sphere(gl, 1, 64, 64);
-                        s2.megaTexture = this.megaTextures[0];
+                        s2.megaTexture = this.megaTextures[1];
                         this.objs.push(s1);
                         this.objs.push(s2);
                         this.objMatrices.push(HNMatrix4x4.S(1000, 1000, 1000));
@@ -506,7 +506,14 @@
                 this.quadDrawer.beginBatch(this.displayCanvas.width, this.displayCanvas.height);
                 this.quadDrawer.draw(this.feedbackBuffer.texture, 0, 0, 128, 128 / (this.displayCanvas.width / this.displayCanvas.height), true);
                 this.quadDrawer.draw(this.megaTextureCache.texture, 0, 128, 128, 128, true);
-                this.quadDrawer.draw(this.megaTextureCache.lookup.texture, 0, 256, 128, 128 / (this.megaTextureCache.lookup.width / this.megaTextureCache.lookup.height), true);
+                var y = 256;
+                for (var n = 0; n < this.megaTextures.length; n++) {
+                    var megaTexture = this.megaTextures[n];
+                    var w = megaTexture.lookup.width / 2;
+                    var h = w / (megaTexture.lookup.width / megaTexture.lookup.height);
+                    this.quadDrawer.draw(megaTexture.lookup.texture, 0, y, w, h, true);
+                    y += h;
+                }
                 this.quadDrawer.endBatch();
             }
 
