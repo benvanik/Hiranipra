@@ -1,6 +1,6 @@
 // If the megatexture given has 'getTileData', then add to a worker thread queue (assumes cpu processing)
 // Otherwise, if it has 'getTileUrl', we do it all async
-// TODO: worker threads! queuing! everything!
+// TODO: worker threads (once Chrome supports them more)
 
 var HNMegaTextureLoader = function() {
     con.info("loader setup");
@@ -77,7 +77,7 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
     this.pendingRequests.push(tile);
     tile.setCallbacks(this, this.tileSucceeded, this.tileFailed);
 
-    // TODO: pump here? we don't want to, I think, because then we don't get a chance to sort things first
+    // NOTE: we don't want to pump here, I think, because then we don't get a chance to sort things first
 
     return tile;
 }
@@ -89,6 +89,7 @@ HNMegaTextureLoader.prototype.pump = function(renderFrameNumber) {
 
     // TODO: a more clever sort - right now we always take the lowest (coarsest) level first
     this.pendingRequests.sort(function(a, b) { return a.level - b.level; });
+    
     while (this.pendingRequests.length > 0) {
         if (this.inFlightRequests.length > this.maxInFlightRequests) {
             // No more can go
@@ -100,7 +101,6 @@ HNMegaTextureLoader.prototype.pump = function(renderFrameNumber) {
             continue;
         }
         this.inFlightRequests.push(request);
-        //con.debug("requesting tile " + request.level + "@" + request.tileX + "," + request.tileY);
         request.beginRequest(this);
     }
 }
@@ -116,7 +116,6 @@ HNMegaTextureLoader.prototype.getCompletedTiles = function(max, renderFrameNumbe
         delete this.pendingTiles[key];
         if (tile.lastUse + 4 < renderFrameNumber) {
             // Tile has not been requested for awhile - don't put it in the cache
-            //con.debug("skipping unused completed tile");
         } else {
             // Valid - queue up
             completedTiles.push(tile);

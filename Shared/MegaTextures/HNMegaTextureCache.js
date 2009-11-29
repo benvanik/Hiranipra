@@ -56,7 +56,7 @@ HNMegaTextureCache.prototype.registerMegaTexture = function(megaTexture) {
     megaTexture.lookup = new HNMegaTextureLookup(this, megaTexture);
 }
 HNMegaTextureCache.prototype.unregisterMegaTexture = function(megaTexture) {
-    // TODO: remove all tiles from self that are in the lookup
+    // NOTE: our tiles will be cleaned up by the LRU automatically, although it'd be nice if we got rid of them to make debugging easier
     megaTexture.lookup.dispose();
     megaTexture.lookup = null;
     delete this.megaTextures[megaTexture.uniqueId];
@@ -194,7 +194,6 @@ HNMegaTextureCache.prototype.removeTile = function(tileRef) {
     }
 }
 HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount) {
-    //con.debug("texture cache full - removing " + requestedRemovalCount + " tiles to make room for new ones");
     this.tileList.sort(function(a, b) { return a.lastUse - b.lastUse; });
     for (var removalCount = 0; (removalCount < requestedRemovalCount) && (this.tileList.length > 0); removalCount++) {
         var tileRef = this.tileList[0];
@@ -297,7 +296,7 @@ HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, render
             }
             if (level > 0) {
                 // For each coarser level, touch or request the parent tile
-                // TODO: priority (by level)
+                // Priority is handled by the loader based on level
                 var tx = tileX;
                 var ty = tileY;
                 var lastRef = tileRef;
