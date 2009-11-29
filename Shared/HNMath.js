@@ -323,6 +323,7 @@ HNMatrix4x4.prototype.multiply = function(other) {
         this.el[12] * other.el[2] + this.el[13] * other.el[6] + this.el[14] * other.el[10] + this.el[15] * other.el[14],
         this.el[12] * other.el[3] + this.el[13] * other.el[7] + this.el[14] * other.el[11] + this.el[15] * other.el[15]
     );
+    return this;
 }
 HNMatrix4x4.prototype.multiplyBy = function(other) {
     var newEl = [
@@ -344,6 +345,7 @@ HNMatrix4x4.prototype.multiplyBy = function(other) {
         this.el[12] * other.el[3] + this.el[13] * other.el[7] + this.el[14] * other.el[11] + this.el[15] * other.el[15]
     ];
     this.el = newEl;
+    return this;
 }
 HNMatrix4x4.prototype.multiplyVec3 = function(v) {
     return new HNVector3(
@@ -424,6 +426,7 @@ HNMatrix4x4.prototype.invert = function() {
          (this.el[0] * t21 - this.el[1] * t22 + this.el[2] * t23) * inverseDet
     ];
     this.el = newEl;
+    return this;
 }
 HNMatrix4x4.prototype.transpose = function() {
     this.el.swap(1, 4);
@@ -432,6 +435,7 @@ HNMatrix4x4.prototype.transpose = function() {
     this.el.swap(6, 9);
     this.el.swap(7, 13);
     this.el.swap(11, 14);
+    return this;
 }
 HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
     this.el[0] += this.el[3] * tx;
@@ -446,6 +450,7 @@ HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
     this.el[12] += this.el[15] * tx;
     this.el[13] += this.el[15] * ty;
     this.el[14] += this.el[15] * tz;
+    return this;
 }
 HNMatrix4x4.prototype.scale = function(sx, sy, sz) {
     this.el[0] *= sx;
@@ -460,6 +465,7 @@ HNMatrix4x4.prototype.scale = function(sx, sy, sz) {
     this.el[12] *= sx;
     this.el[13] *= sy;
     this.el[14] *= sz;
+    return this;
 }
 HNMatrix4x4.prototype.rotateX = function(rads) {
     var m = new HNMatrix4x4(
@@ -469,6 +475,7 @@ HNMatrix4x4.prototype.rotateX = function(rads) {
         0, 0, 0, 1
     );
     this.multiplyBy(m);
+    return this;
 }
 HNMatrix4x4.prototype.rotateY = function(rads) {
     var m = new HNMatrix4x4(
@@ -478,6 +485,7 @@ HNMatrix4x4.prototype.rotateY = function(rads) {
         0, 0, 0, 1
     );
     this.multiplyBy(m);
+    return this;
 }
 HNMatrix4x4.prototype.rotateZ = function(rads) {
     var m = new HNMatrix4x4(
@@ -487,6 +495,7 @@ HNMatrix4x4.prototype.rotateZ = function(rads) {
         0, 0, 0, 1
     );
     this.multiplyBy(m);
+    return this;
 }
 
 var HNMatrixStack4x4 = function() {

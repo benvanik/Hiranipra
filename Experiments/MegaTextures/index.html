@@ -130,13 +130,13 @@
             this.timer.start();
         }
 
-        app.switchToTexture = function(n) {
+        app.switchToTexture = function(textureNumber) {
             var gl = app.gl;
             try {
-                con.beginGroup("App - switching to texture " + n);
+                con.beginGroup("App - switching to texture " + textureNumber);
 
                 con.beginGroup("App - initializing a debug megatexture");
-                switch (n) {
+                switch (textureNumber) {
                     case 0:
                         this.megaTexture = new HNDeepZoomMegaTexture(
                             255,
@@ -186,17 +186,17 @@
             }
         }
 
-        app.switchToModel = function(n) {
+        app.switchToScene = function(modelNumber) {
             var gl = app.gl;
             try {
-                con.beginGroup("App - switching to model " + n);
+                con.beginGroup("App - switching to model " + modelNumber);
 
                 // Clear the texture cache (not required, but good for debugging)
                 this.megaTextureCache.clear();
 
                 // Create our dummy programs
                 var simplevs;
-                if (n == 2) {
+                if (modelNumber == 2) {
                     // 2 is wavey
                     simplevs = $("#wavey-mt-vs").text();
                 } else {
@@ -239,27 +239,50 @@
                     //gl.useProgram(null);
                 };
 
-                switch (n) {
+                if (this.objs) {
+                    for (var n = 0; n < this.objs.length; n++) {
+                        this.objs[n].dispose();
+                    }
+                }
+                this.objs = [];
+                this.objMatrices = [];
+                switch (modelNumber) {
                     case 0:
-                        this.obj = HNGLGeometry.quad(gl);
-                        this.objMatrix = HNMatrix4x4.T(0, 5, 0);
-                        this.objMatrix.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                        var obj = HNGLGeometry.quad(gl);
+                        obj.megaTexture = this.megaTexture;
+                        this.objs.push(obj);
+                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height)));
                         this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
                         this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 1:
                     case 2:
-                        this.obj = HNGLGeometry.segmentedQuad(gl, 32);
-                        this.objMatrix = HNMatrix4x4.T(0, 5, 0);
-                        this.objMatrix.scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height));
+                        var obj = HNGLGeometry.segmentedQuad(gl, 32);
+                        obj.megaTexture = this.megaTexture;
+                        this.objs.push(obj);
+                        this.objMatrices.push(HNMatrix4x4.T(0, 5, 0).scale(2000, 1, 2000 / (this.megaTexture.width / this.megaTexture.height)));
                         this.camera.setPosition(-593.3733363513151, -801.8389213513655, -827.0561969056075);
                         this.camera.setYawPitchRoll(-5.793096853219576, -0.791681348704628, 0);
                         break;
                     case 3:
-                        this.obj = HNGLGeometry.sphere(gl, 1, 64, 64);
-                        this.objMatrix = HNMatrix4x4.S(1000, 1000, 1000);
+                        var obj = HNGLGeometry.sphere(gl, 1, 64, 64);
+                        obj.megaTexture = this.megaTexture;
+                        this.objs.push(obj);
+                        this.objMatrices.push(HNMatrix4x4.S(1000, 1000, 1000));
                         this.camera.setPosition(880.3470689355484, -550.242265922766, 1420.1244651797983);
                         this.camera.setYawPitchRoll(-8.884424024351938, -0.32358404331974866, 0);
+                        break;
+                    case 4:
+                        var s1 = HNGLGeometry.sphere(gl, 1, 64, 64);
+                        s1.megaTexture = this.megaTexture;
+                        var s2 = HNGLGeometry.sphere(gl, 1, 64, 64);
+                        s2.megaTexture = this.megaTexture;
+                        this.objs.push(s1);
+                        this.objs.push(s2);
+                        this.objMatrices.push(HNMatrix4x4.S(1000, 1000, 1000));
+                        this.objMatrices.push(HNMatrix4x4.S(700, 700, 700).translate(2000, 0, 0));
+                        this.camera.setPosition(-2332.01604900909, -307.14817473469446, 1086.0196456335984);
+                        this.camera.setYawPitchRoll(-10.141061085787864, -0.2764601535159017, 0);
                         break;
                 }
             } finally {
@@ -281,7 +304,7 @@
                 con.endGroup();
 
                 this.switchToTexture(2);
-                this.switchToModel(3);
+                this.switchToScene(4);
 
                 return true;
             } finally {
@@ -358,16 +381,19 @@
                 }
             } else {
                 if (this.keyboard.wasPressed(49)) { // 1
-                    app.switchToModel(0);
+                    app.switchToScene(0);
                 }
                 else if (this.keyboard.wasPressed(50)) { // 2
-                    app.switchToModel(1);
+                    app.switchToScene(1);
                 }
                 else if (this.keyboard.wasPressed(51)) { // 3
-                    app.switchToModel(2);
+                    app.switchToScene(2);
                 }
                 else if (this.keyboard.wasPressed(52)) { // 4
-                    app.switchToModel(3);
+                    app.switchToScene(3);
+                }
+                else if (this.keyboard.wasPressed(53)) { // 5
+                    app.switchToScene(4);
                 }
             }
 
@@ -397,11 +423,12 @@
                 gl.enable(gl.BLEND);
                 gl.enable(gl.DEPTH_TEST);
                 gl.depthFunc(gl.LEQUAL);
-                if (this.obj) {
-                    this.modelStack.push(this.objMatrix);
+                for (var n = 0; n < this.objs.length; n++) {
+                    var obj = this.objs[n];
+                    this.modelStack.push(this.objMatrices[n]);
                     this.staticProgram.pass1.begin(this.viewProjStack.current, this.modelStack.current);
-                    this.megaTextureCache.setPass1Uniforms(this.staticProgram.pass1, this.feedbackBuffer, this.megaTexture);
-                    this.obj.draw([this.staticProgram.pass1.a_pos, this.staticProgram.pass1.a_tex0]);
+                    this.megaTextureCache.setPass1Uniforms(this.staticProgram.pass1, this.feedbackBuffer, obj.megaTexture);
+                    obj.draw([this.staticProgram.pass1.a_pos, this.staticProgram.pass1.a_tex0]);
                     this.staticProgram.pass1.end();
                     this.modelStack.pop();
                 }
@@ -427,11 +454,12 @@
             }
 
             // ---- Dummy object ----
-            if (this.obj) {
-                this.modelStack.push(this.objMatrix);
+            for (var n = 0; n < this.objs.length; n++) {
+                var obj = this.objs[n];
+                this.modelStack.push(this.objMatrices[n]);
                 this.staticProgram.pass2.begin(this.viewProjStack.current, this.modelStack.current);
-                this.megaTextureCache.setPass2Uniforms(this.staticProgram.pass2, this.megaTexture);
-                this.obj.draw([this.staticProgram.pass2.a_pos, this.staticProgram.pass2.a_tex0]);
+                this.megaTextureCache.setPass2Uniforms(this.staticProgram.pass2, obj.megaTexture);
+                obj.draw([this.staticProgram.pass2.a_pos, this.staticProgram.pass2.a_tex0]);
                 this.staticProgram.pass2.end();
                 this.modelStack.pop();
             }
