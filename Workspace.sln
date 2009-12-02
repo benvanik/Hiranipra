@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MegaTextures", "MegaTexture
 		Shared\MegaTextures\HNMegaTextureCache.js = Shared\MegaTextures\HNMegaTextureCache.js
 		Shared\MegaTextures\HNMegaTextureLoader-Worker.js = Shared\MegaTextures\HNMegaTextureLoader-Worker.js
 		Shared\MegaTextures\HNMegaTextureLoader.js = Shared\MegaTextures\HNMegaTextureLoader.js
+		Shared\MegaTextures\HNMegaTextureLookup.js = Shared\MegaTextures\HNMegaTextureLookup.js
 		Shared\MegaTextures\HNMegaTextureShaders.js = Shared\MegaTextures\HNMegaTextureShaders.js
 		Shared\MegaTextures\HNMegaTextureTile.js = Shared\MegaTextures\HNMegaTextureTile.js
 	EndProjectSection
