@@ -1,0 +1,45 @@
+{
+    "version": 0,
+    "textures": [
+        {
+            "id": "tex0",
+            "dzi": {
+                "width": 123,
+                "height": 123,
+                "tileSize": 254,
+                "tileOverlap": 1,
+                "tileFormat": "jpg",
+                "contentUrl": "http://foo/foo_files/"
+            }
+        }
+    ],
+    "materials": [
+        {
+            "id": "mat0",
+            "texture": "tex0",
+            "effect": null
+        }
+    ],
+    "models": [
+        {
+            "id": "modelA",
+            "lods": [0, 1],
+            "boundingSphere": {
+                "center": [0, 0, 0],
+                "radius": 5
+            },
+            "boundingBox": {
+                "min": [-5, -5, -5],
+                "max": [5, 5, 5]
+            },
+            "anchors": [
+                {
+                    "id": "a0",
+                    "position": [0, 0, 0],
+                    "orientation": [],
+                    "model": null
+                }
+            ]
+        }
+    ]
+}

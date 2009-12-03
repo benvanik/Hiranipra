@@ -1,0 +1,142 @@
+--------- Overview ---------
+
+HNModel
++- HNModelLOD[]
+   +- Geometry (vertices/etc)
+   +- Bounding sphere/box
++- HNModelAnchor[]
+   +- Name/position/etc
+   +- Reference to other model
++- HNModelMaterial
+   +- Reference to texture
+   +- Reference to effect
+
+HNModelInstance references a model and stores any instance-specific information, such as anchor data and material state. In the future, instances will also store bone
+state and other animation values. For now, it just provides a way to do the drawing. Model instances also support the asynchronous loading mechanism. Although you can
+get a new model instance synchronously from the model cache, it may not contain any data. Drawing an instance that does not yet have data will result in the default
+drawer geometry being drawn, unless overridden.
+
+HNModelPack is metadata about a collection models that can be registered with a loader. A pack contains metadata for a set of models, textures (usually only one),
+and effects, and acts as a namespace for all references between them. The design is such that all metadata is stored in a single pack file, but all geometry is split out.
+This allows for ease of use (as long as a pack is loaded you can always trust that you have anchor information/etc) and progressive loading (finer levels of detail can be
+loaded async).
+
+The HNModelCache is the primary interface to model data. The loading of models happens automatically through model IDs, and the drawer will automatically handle requesting
+the required levels of detail. You should never assume anything about the geometry present in the cache, as the cache may manage it however it sees fit.
+
+The HNModelDrawer takes a list of HNModelInstances to draw and will attempt to draw them as efficiently as possible. It is expected that you have done at least a little bit
+of culling before sending models down (don't send 10000 when only 1 is visible).
+
+--------- Current Limitations ---------
+Due to the design target of this system, there are no animations (yet) and anchors don't have the required information to do IK. In the future, when movable turrets are
+added the degrees of freedom and other properties will be added to allow for all that. Since I'm only planning on mechanical models, no skinning will be supported.
+
+--------- Addressing ---------
+To the app, models must be uniquely specified with a pack/ID/variant tuple. By always requesting models with this format, it's enough to allow the cache/loader/etc to
+properly load the required data at runtime.
+The current format is:
+[Pack.modelpack]/Model/[ID].[material]
+Where:
+ - Pack.modelpack is the relative path of the model pack
+ - ID is the pack-unique name of the model (can be a string or a number)
+ - Material is a pack-unique material name
+Ex:
+var myInstance = modelCache.createModelInstance("MyPack.modelpack/Model/FatBoy.A");
+
+--------- LRU ---------
+The model cache allows for unloading of model data as well as entire packs. Because not all models loaded may be drawn every frame, the burden falls on the application
+to manage the reference counting of models. Basically, when you create an HNModelInstance off of a model, its reference count is incremented and when you are done with
+the instance you must call instance.dispose() to decrement the reference count.
+
+--------- Storage Format ---------
+MyPack.modelpack/           - The root modelpack directory - is the name of the model pack
++- info.json                - Pack metadata
++- LOD/0/0.json             - LOD data for level 0, block 0
++- LOD/1/0.json             - LOD data for level 1, block 0
++- LOD/1/1.json             - LOD data for level 1, block 1
+   ...
+
+Model packs are simply directories of files. The info.json contains all model, material, and effect metadata - everything required for the application to be able to use
+the models. The level of detail data is a packed representation of batches of geometry. Level 0 is the coarsest level of detail, level N is the finest. Not all models
+will have the same max level of detail. The idea behind the LOD batches is that LOD 0 will usually have 20-30 polygons per object, and packing them all in one file will
+greatly reduce round trip time and speed up loads. At higher LODs, however, you don't want to have to load several thousand polys of a bunch of models just to get the
+model you are interested in, so they are split up in groups. The grouping ratio is tool-defined - you could set a polygon-per-batch limit, for example - models just reference
+their group.
+
+--------- Async Loading ---------
+The storage format of model packs allows for several levels of asynchronous loading. The application only needs to be aware of the async pack loading features.
+
+Pack loading: when a pack is first referenced via createModelInstance, the model instance is returned right away with a hasMetadata = false flag. When a pack is first loaded,
+LOD 0 will always load, regardless of whether or not the model has been drawn. This allows you to check hasMetadata and do some custom stuff if it is not there, and only start
+drawing it once hasMetadata is true.
+TODO: If a model that has no metadata is drawn, the HNModelCache.loadingGeometry is used. You can override this by setting HNModelInstance.loadingGeometry to something else.
+
+LOD loading: once metadata has been loaded, drawing a model will cause additional LODs to be loaded as required. The drawer will automatically determine which LODs to load, in
+what order, and make the requests. If you stop drawing models at certain LODs, those LODs may be dropped from the cache and their requests cancelled.
+
+--------- File Format: pack ---------
+{
+    "verison": 0,
+    "textures": [
+        {
+            "id": "name"
+            "dzi": {
+                "width": width,
+                "height": height,
+                "tileSize": tile size,
+                "tileOverlap": tile overlap,
+                "tileFormat": "tile format",
+                "contentUrl": "some url"
+            }
+        }, ... ],
+    "materials": [
+        {
+            "id": "name",
+            "texture": "name ref",
+            "effect": { or can be null to use default model effect
+                "vertexShader": "glsl",
+                "fragmentShader": "glsl"
+            }
+        }, ... ],
+    "models": [
+        {
+            "id": "name",
+            "lods": [<<lod 0 block>>, <<lod 1 block>>, <<lod 2 block>>, ...]
+            "boundingSphere": {
+                "center": [x, y, z],
+                "radius": radius
+            },
+            "boundingBox": {
+                "min": [x, y, z],
+                "max": [x, y, z]
+            },
+            "anchors": [
+                {
+                    "id": "name",
+                    "position": [x, y, z],
+                    "orientation": Matrix3x3 or omit/null,
+                    "model": "name ref" or omit/null
+                }, ...
+            ]
+        }, ... ]
+}
+
+--------- File Format: LOD ---------
+{
+    "models": [
+        {
+            "id": "name",
+            "type": "trilist"/"tristrip"
+            "offset": start index offset,
+            "count": number of indices
+        }, ...
+    ],
+    "format": "pnt",
+    "vertices": [
+        x, y, z, nx, ny, nz, tu, tv,
+        ...
+    ],
+    "indices": [
+        i0, i1, i2, ...
+    ],
+}

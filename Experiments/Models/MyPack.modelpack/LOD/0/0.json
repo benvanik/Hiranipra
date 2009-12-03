@@ -1,0 +1,19 @@
+{
+    "models": [
+        {
+            "id": "modelA",
+            "type": "trilist",
+            "offset": 0,
+            "count": 3
+        }
+    ],
+    "format": "pnt",
+    "vertices": [
+        -5, 0, -5, 0, 1, 0, 0, 1,
+        5, 0, -5, 0, 1, 0, 1, 1,
+        0, 0, 5, 0, 1, 0, 0.5, 0
+    ],
+    "indices": [
+        0, 1, 2
+    ]
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Hiranipra Model Experiment</title>
+
+    <script type="text/javascript" src="../../Dependencies/jquery-1.3.2.min.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNUtil.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNConsole.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNConfig.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNShell.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNMath.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNKeyboard.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNFPSCamera.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNTimer.js"></script>
+
+    <script type="text/javascript" src="../../Shared/HNProfileGraph.js"></script>
+
+    <script type="text/javascript" src="../../Shared/GL/HNGL.js"></script>
+
+    <script type="text/javascript" src="../../Shared/GL/HNGLProgram.js"></script>
+
+    <script type="text/javascript" src="../../Shared/GL/HNGLGrid.js"></script>
+
+    <script type="text/javascript" src="../../Shared/GL/HNGLQuadDrawer.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelMaterial.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelLOD.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelAnchor.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModel.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelInstance.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelPack.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelLoader.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelCache.js"></script>
+
+    <script type="text/javascript" src="../../Shared/Models/HNModelDrawer.js"></script>
+
+    <script type="text/javascript">
+        var app = {};
+        app.initialize = function(displayCanvas, profileGraphCanvas, profileGraphText) {
+            this.gl = HNGLCreate(displayCanvas);
+            if (!this.gl) {
+                return;
+            }
+            if (!this.loadAssets()) {
+                return;
+            }
+
+            if (profileGraphCanvas) {
+                this.profileGraph = new HNProfileGraph(200, 20, profileGraphCanvas);
+                this.profileGraphText = profileGraphText;
+            }
+
+            this.keyboard = new HNKeyboard();
+            this.camera = new HNFPSCamera();
+            this.camera.resize(displayCanvas.width, displayCanvas.height);
+            this.camera.znear = 0.1;
+            this.camera.zfar = 10000.0;
+
+            this.viewProjStack = new HNMatrixStack4x4();
+            this.modelStack = new HNMatrixStack4x4();
+
+            this.timer = new HNTimer([this, this.update], [this, this.render]);
+            this.timer.start();
+        }
+
+        app.loadAssets = function() {
+            var gl = app.gl;
+            try {
+                con.beginGroup("App - loading assets");
+
+                this.grid = new HNGLGrid(gl, 25, 100);
+
+                this.modelCache = new HNModelCache(gl);
+                this.modelDrawer = new HNModelDrawer(gl, this.modelCache);
+
+                this.instances = [];
+                {
+                    var inst = this.modelCache.createModelInstance("MyPack.modelpack/Model/modelA.mat0");
+                    this.instances.push(inst);
+                }
+                {
+                    var inst = this.modelCache.createModelInstance("MyPack.modelpack/Model/modelA.mat0");
+                    this.instances.push(inst);
+                }
+
+                return true;
+            } finally {
+                con.endGroup();
+            }
+        }
+
+        app.update = function(delta) {
+            this.updateInput(delta);
+            this.camera.update(delta);
+        }
+
+        app.updateInput = function(delta) {
+            // ---- Check for some magic key presses ----
+            if ((this.keyboard.isDown(116)) || // F5
+                (this.keyboard.isDown(17) && this.keyboard.isDown(82))) // ctrl + r
+            {
+                // Reload the page
+                this.timer.stop();
+                this.keyboard.clear();
+                window.location.reload();
+                return;
+            }
+            if ((this.keyboard.isDown(27))) // esc
+            {
+                // Stop/start the timer
+                if (this.timer.active) {
+                    con.info("pausing...");
+                    this.timer.stop();
+                    this.keyboard.clear();
+                    // Begin our own check to see when we should resume
+                    var resumeObj = new Object();
+                    resumeObj.intervalId = window.setInterval(function() {
+                        if (app.keyboard.isDown(27)) {
+                            window.clearInterval(resumeObj.intervalId);
+                            app.keyboard.clear();
+                            con.info("resuming");
+                            app.timer.start();
+                        }
+                    }, 100);
+                } else {
+                    con.info("resuming");
+                    this.timer.start();
+                }
+            }
+
+            // ---- Update camera ----
+            this.camera.updateInput(delta, this.keyboard);
+        }
+
+        app.render = function(delta) {
+            var startTime = (new Date().getTime());
+
+            var gl = app.gl;
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            this.viewProjStack.load(this.camera.viewMatrix);
+            this.viewProjStack.multiplyBy(this.camera.projMatrix);
+            this.modelStack.loadIdentity();
+
+            this.grid.draw(this.viewProjStack.current, 1.0);
+
+            for (var n = 0; n < this.instances.length; n++) {
+                var inst = this.instances[n];
+                // ?
+            }
+            this.modelDrawer.drawList(this.viewProjStack, this.modelStack, this.instances);
+
+            if (this.profileGraph) {
+                var endTime = ((new Date().getTime()) - startTime);
+                this.profileGraph.beginUpdate();
+                this.profileGraph.addSample(endTime, 16.7777);
+                this.profileGraph.endUpdate();
+                this.profileGraphText.innerHTML = endTime + "ms";
+            }
+        }
+
+        function onLoad() {
+            app.initialize(
+                $("#displayCanvas").get()[0],
+                $("#profileGraphCanvas").get()[0], $("#profileGraphText").get()[0]
+            );
+        }
+    </script>
+
+</head>
+<body onload="onLoad();">
+    <canvas id="displayCanvas" width="640" height="480"></canvas>
+    <br />
+    <br />
+    <canvas id="profileGraphCanvas" style="border: 1px; border-color: grey; border-style: solid;"></canvas>
+    <span id="profileGraphText"></span>
+</body>
+</html>
