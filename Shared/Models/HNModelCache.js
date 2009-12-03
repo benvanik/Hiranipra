@@ -1,8 +1,8 @@
 var HNModelCache = function(gl) {
     this.gl = gl;
-    this.loader = new HNModelLoader(this);
 
     this.modelPacks = {};
+    this.pendingBlocks = [];
 }
 HNModelCache.prototype.dispose = function() {
 }
@@ -12,9 +12,19 @@ HNModelCache.prototype.requestModelPack = function(modelPackUrl) {
     this.modelPacks[modelPackUrl] = modelPack;
 
     var metadataUrl = modelPackUrl + "/info.json";
+    var modelCache = this;
     jQuery.getJSON(metadataUrl, function(data, textStatus) {
         if (textStatus == "success") {
             modelPack.fill(data);
+
+            // Request all LOD 0 blocks
+            for (var modelId in modelPack.models) {
+                var model = modelPack.models[modelId];
+                var lodRef = model.lods[0];
+                if (lodRef && !lodRef.block) {
+                    modelCache.requestModelPackLODBlock(modelPack, 0, lodRef.blockIndex);
+                }
+            }
         } else {
             con.error("HNMT - unable to load modelpack " + modelPackUrl);
         }
@@ -27,19 +37,25 @@ HNModelCache.prototype.unloadModelPack = function(modelPack) {
     con.debug("unloadModelPack(" + modelPack.url + ") not implemented");
 }
 
-HNModelCache.prototype.requestModelPackLOD = function(modelPack, lodIndex, block) {
-    var lodUrl = modelPack.url + "/LOD/" + lodIndex + "/" + block + ".json";
-    jQuery.getJSON(lodUrl, function(data, textStatus) {
+HNModelCache.prototype.requestModelPackLODBlock = function(modelPack, lodIndex, blockIndex) {
+    var blockUrl = modelPack.url + "/LOD/" + lodIndex + "/" + blockIndex + ".json";
+    if (this.pendingBlocks[blockUrl]) {
+        // Already downloading
+        return;
+    }
+    var modelCache = this;
+    jQuery.getJSON(blockUrl, function(data, textStatus) {
         if (textStatus == "success") {
-            modelPack.fillLOD(lodIndex, block, data);
+            modelPack.fillLODBlock(lodIndex, blockIndex, data);
+            delete modelCache.pendingBlocks[blockUrl];
         } else {
-            con.error("HNMT - unable to load modelpack LOD " + modelPack.url + "@" + lodIndex + "." + block);
+            con.error("HNMT - unable to load modelpack LOD " + modelPack.url + "@" + lodIndex + "." + blockIndex);
         }
     });
 }
-HNModelCache.prototype.unloadModelPackLOD = function(modelPack, lodIndex) {
-    // TODO: unload model pack LOD
-    con.debug("unloadModelPackLOD(" + modelPack.url + ", " + lodIndex + ") not implemented");
+HNModelCache.prototype.unloadModelPackLODBlock = function(modelPack, lodIndex, blockIndex) {
+    // TODO: unload model pack LOD block
+    con.debug("unloadModelPackLODBlock(" + modelPack.url + ", " + lodIndex + +", " + blockIndex + ") not implemented");
 }
 
 HNModelCache.prototype.createModelInstance = function(modelUrl) {

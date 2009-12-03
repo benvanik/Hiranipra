@@ -1,2 +1,0 @@
-var HNModelLOD = function() {
-}

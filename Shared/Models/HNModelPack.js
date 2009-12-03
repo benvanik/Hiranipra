@@ -5,11 +5,18 @@ var HNModelPack = function(gl, url) {
     this.textures = {};
     this.materials = {};
     this.models = {};
+    this.lods = [];
 
     this.pendingFill = true;
     this.backfillList = [];
 }
 HNModelPack.prototype.dispose = function() {
+    // TODO: dispose models/etc
+    for (var n = 0; n < this.lods.length; n++) {
+        this.lods[n].dispose();
+    }
+    this.lods = [];
+    this.gl = null;
 }
 
 HNModelPack.prototype.addBackfillInstance = function(modelInstance, modelId, materialId) {
@@ -61,9 +68,16 @@ HNModelPack.prototype.fill = function(json) {
         var jmodel = json.models[n];
         var lods = [];
         for (var m = 0; m < jmodel.lods.length; m++) {
+            var lod = this.lods[m];
+            if (!lod) {
+                // Create LOD if it hasn't been hit yet
+                lod = new HNModelPackLOD(this.gl, this, m);
+                this.lods[m] = lod;
+            }
             lods.push({
-                lodIndex: m,
-                block: jmodel.lods[m]
+                lod: lod,
+                blockIndex: jmodel.lods[m],
+                block: null // will be filled in later on block fill
             });
         }
         var anchors = {};
@@ -90,7 +104,10 @@ HNModelPack.prototype.fill = function(json) {
     this.processBackfills();
     con.endGroup();
 }
-HNModelPack.prototype.fillLOD = function(lodIndex, block, json) {
-    con.beginGroupCollapsed("HNMP - filling LOD " + this.url + "@" + lodIndex + "." + block);
+HNModelPack.prototype.fillLODBlock = function(lodIndex, blockIndex, json) {
+    con.beginGroupCollapsed("HNMP - filling LOD " + this.url + "@" + lodIndex + "." + blockIndex);
+    var lod = this.lods[lodIndex];
+    con.assert(lod != null, "lod " + lodIndex + " not found");
+    lod.fillBlock(blockIndex, json);
     con.endGroup();
 }
