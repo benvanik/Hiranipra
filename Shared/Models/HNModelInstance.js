@@ -7,6 +7,8 @@ var HNModelInstance = function(modelUrl, model, material) {
     } else {
         // Model not yet loaded - awaiting a fill
     }
+
+    this.modelMatrix = HNMatrix4x4.I();
 }
 HNModelInstance.prototype.dispose = function() {
     this.pendingFill = false;

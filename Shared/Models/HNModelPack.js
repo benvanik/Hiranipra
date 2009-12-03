@@ -97,7 +97,7 @@ HNModelPack.prototype.fill = function(json) {
             new HNVector3(jmodel.boundingBox.min[0], jmodel.boundingBox.min[1], jmodel.boundingBox.min[2]),
             new HNVector3(jmodel.boundingBox.max[0], jmodel.boundingBox.max[1], jmodel.boundingBox.max[2])
         ];
-        var model = new HNModel(jmodel.id, lods, anchors, boundingSphere, boundingBox);
+        var model = new HNModel(this, jmodel.id, lods, anchors, boundingSphere, boundingBox);
         this.models[jmodel.id] = model;
     }
 

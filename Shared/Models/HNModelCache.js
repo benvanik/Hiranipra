@@ -43,6 +43,8 @@ HNModelCache.prototype.requestModelPackLODBlock = function(modelPack, lodIndex, 
         // Already downloading
         return;
     }
+    this.pendingBlocks[blockUrl] = true;
+    
     var modelCache = this;
     jQuery.getJSON(blockUrl, function(data, textStatus) {
         if (textStatus == "success") {

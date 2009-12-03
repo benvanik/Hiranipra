@@ -23,7 +23,7 @@
     "models": [
         {
             "id": "modelA",
-            "lods": [0, 1],
+            "lods": [0, 0],
             "boundingSphere": {
                 "center": [0, 0, 0],
                 "radius": 5

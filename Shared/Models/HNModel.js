@@ -1,4 +1,5 @@
-var HNModel = function(id, lods, anchors, boundingSphere, boundingBox) {
+var HNModel = function(modelPack, id, lods, anchors, boundingSphere, boundingBox) {
+    this.modelPack = modelPack;
     this.id = id;
     this.lods = lods;
     this.anchors = anchors ? anchors : {};
