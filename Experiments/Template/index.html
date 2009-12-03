@@ -31,14 +31,13 @@
 
     <script type="text/javascript" src="../../Shared/GL/HNGLQuadDrawer.js"></script>
 
+    <script type="text/javascript" src="../../Shared/GL/HNGLGeometry.js"></script>
+
     <script type="text/javascript">
         var app = {};
         app.initialize = function(displayCanvas, profileGraphCanvas, profileGraphText) {
             this.gl = HNGLCreate(displayCanvas);
             if (!this.gl) {
-                return;
-            }
-            if (!this.loadAssets()) {
                 return;
             }
 
@@ -47,6 +46,7 @@
                 this.profileGraphText = profileGraphText;
             }
 
+            this.displayCanvas = displayCanvas;
             this.keyboard = new HNKeyboard();
             this.camera = new HNFPSCamera();
             this.camera.resize(displayCanvas.width, displayCanvas.height);
@@ -55,6 +55,10 @@
 
             this.viewProjStack = new HNMatrixStack4x4();
             this.modelStack = new HNMatrixStack4x4();
+
+            if (!this.loadAssets()) {
+                return;
+            }
 
             this.timer = new HNTimer([this, this.update], [this, this.render]);
             this.timer.start();
@@ -76,6 +80,7 @@
         app.update = function(delta) {
             this.updateInput(delta);
             this.camera.update(delta);
+            this.keyboard.endFrame();
         }
 
         app.updateInput = function(delta) {
@@ -117,10 +122,16 @@
         }
 
         app.render = function(delta) {
+            var gl = this.gl;
             var startTime = (new Date().getTime());
 
-            var gl = app.gl;
+            gl.viewport(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+            gl.clearColor(0.15, 0.15, 0.15, 1);
+            gl.clearDepth(1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.disable(gl.BLEND);
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.LEQUAL);
 
             this.viewProjStack.load(this.camera.viewMatrix);
             this.viewProjStack.multiplyBy(this.camera.projMatrix);

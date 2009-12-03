@@ -26,7 +26,7 @@ HNModelCache.prototype.requestModelPack = function(modelPackUrl) {
                 }
             }
         } else {
-            con.error("HNMT - unable to load modelpack " + modelPackUrl);
+            con.error("HNMP - unable to load modelpack " + modelPackUrl);
         }
     });
 
@@ -44,14 +44,14 @@ HNModelCache.prototype.requestModelPackLODBlock = function(modelPack, lodIndex, 
         return;
     }
     this.pendingBlocks[blockUrl] = true;
-    
+
     var modelCache = this;
     jQuery.getJSON(blockUrl, function(data, textStatus) {
         if (textStatus == "success") {
             modelPack.fillLODBlock(lodIndex, blockIndex, data);
             delete modelCache.pendingBlocks[blockUrl];
         } else {
-            con.error("HNMT - unable to load modelpack LOD " + modelPack.url + "@" + lodIndex + "." + blockIndex);
+            con.error("HNMP - unable to load modelpack LOD " + modelPack.url + "@" + lodIndex + "." + blockIndex);
         }
     });
 }

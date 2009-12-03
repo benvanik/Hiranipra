@@ -52,7 +52,6 @@ var HNGLGrid = function(gl, blocks, spacing) {
         };
         this.program.end = function() {
             var gl = this.gl;
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.disableVertexAttribArray(this.a_pos);
             //gl.useProgram(null);
         };
