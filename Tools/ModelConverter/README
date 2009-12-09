@@ -1,0 +1,3 @@
+This tool takes an input .fbx file and spits out a metadata stub and LOD files containing geometry.
+
+The output of this tool is a metadata json file and a directory of LODs. The output can directly be used as a modelpack, or merged with other models into a real collection.
