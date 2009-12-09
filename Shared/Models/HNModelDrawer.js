@@ -3,7 +3,7 @@ var HNModelDrawer = function(gl, modelCache) {
     this.modelCache = modelCache;
 
     // Setup default geometry for loading objects
-    this.loadingGeometry = HNGLGeometry.segmentedQuad(gl, 32); //HNGLGeometry.sphere(gl, 1, 8, 8);
+    this.loadingGeometry = HNGLGeometry.sphere(gl, 1, 8, 8);
     if (!this.loadingGeometry) {
         return;
     }
@@ -39,7 +39,7 @@ var HNModelDrawer = function(gl, modelCache) {
         var gl = this.gl;
         gl.disableVertexAttribArray(this.a_tex0);
         gl.disableVertexAttribArray(this.a_pos);
-        //gl.useProgram(null);
+        gl.useProgram(null);
     };
 }
 
@@ -50,6 +50,7 @@ HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list) {
 
         modelStack.push();
         modelStack.multiplyBy(instance.modelMatrix);
+        var modelViewProjMatrix = modelStack.current.multiply(viewProjStack.current);
 
         // Calculate distance from camera/size/etc for LOD
         // TODO: model LOD
@@ -73,7 +74,6 @@ HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list) {
 
         // TODO: add to a batch list of things to draw, sort, then draw them
 
-        var modelViewProjMatrix = viewProjStack.current.multiply(modelStack.current);
         if( false ){//if (drawLodRef) {
             // Have something to draw
             //con.debug("something to draw - lod " + drawLodRef.lod.lodIndex + "." + drawLodRef.blockIndex);

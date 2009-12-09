@@ -20,6 +20,19 @@ var HNGLGrid = function(gl, blocks, spacing) {
         if (!this.program) {
             return;
         }
+        this.program.begin = function(viewProjMatrix, scale) {
+            var gl = this.gl;
+            gl.useProgram(this.id);
+            gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
+            gl.uniform1f(this.u_scale, scale);
+            gl.uniform4f(this.u_color, 1.0, 1.0, 1.0, 1.0);
+            gl.enableVertexAttribArray(this.a_pos);
+        };
+        this.program.end = function() {
+            var gl = this.gl;
+            gl.disableVertexAttribArray(this.a_pos);
+            gl.useProgram(null);
+        };
 
         var positions = [];
         {
@@ -41,20 +54,6 @@ var HNGLGrid = function(gl, blocks, spacing) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(positions), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-        this.program.begin = function(viewProjMatrix, scale) {
-            var gl = this.gl;
-            gl.useProgram(this.id);
-            gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
-            gl.uniform1f(this.u_scale, scale);
-            gl.uniform4f(this.u_color, 1.0, 1.0, 1.0, 1.0);
-            gl.enableVertexAttribArray(this.a_pos);
-        };
-        this.program.end = function() {
-            var gl = this.gl;
-            gl.disableVertexAttribArray(this.a_pos);
-            //gl.useProgram(null);
-        };
 
         this.gl = gl;
 

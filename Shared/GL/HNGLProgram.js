@@ -33,7 +33,7 @@ HNGLShader.fromScriptElement = function(gl, element) {
             con.error("unknown script element type " + element.type);
             return null;
     }
-    var source = $(scriptElement).text();
+    var source = $(element).text();
     return HNGLShader.fromSource(gl, type, source);
 }
 
