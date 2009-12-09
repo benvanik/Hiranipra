@@ -15,7 +15,7 @@ var HNMegaTextureLoader = function() {
     this.pendingRequests = [];
 
     var me = this;
-    this.worker = new Worker("HNMegaTextureLoader-Worker.js");
+    /*this.worker = new Worker("HNMegaTextureLoader-Worker.js");
     this.worker.onmessage = function(event) {
         var result = JSON.parse(event.data);
         var tile = me.pendingTiles[result.key];
@@ -27,7 +27,7 @@ var HNMegaTextureLoader = function() {
         // Pack result into tile
         tile.loadPixels(result.width, result.height, result.pixels);
         me.tileSucceeded(tile);
-    }
+    }*/
 }
 HNMegaTextureLoader.prototype.tileSucceeded = function(tile) {
     //con.debug("tile load succeeded " + tile.level + "@" + tile.tileX + "," + tile.tileY);

@@ -71,6 +71,6 @@ HNGLFeedbackBuffer.prototype.readPixels = function() {
     return {
         width: this.width,
         height: this.height,
-        pixels: pixels
+        pixels: ( pixels.data ? pixels.data : pixels )
     };
 }

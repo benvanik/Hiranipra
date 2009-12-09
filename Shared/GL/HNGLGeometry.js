@@ -81,10 +81,10 @@ HNGLGeometry.prototype.setIndices = function(indices) {
     }
     this.indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    if (indices.constructor == WebGLUnsignedShortArray) {
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    } else {
+    if (indices.shift) {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(indices), gl.STATIC_DRAW);
+    } else {
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 }
