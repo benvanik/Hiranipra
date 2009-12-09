@@ -1,32 +1,6 @@
 /* ---------------------------------------------------------------------------- */
-// This block only exists until the browsers stabilize a bit
-// The WebGL spec was recently updated to replace the Canvas prefix on types with the WebGL prefix.
-// For compatibility reasons we set up aliases to from the WebGL prefixed typename to the
-// Canvas prefixed name for the benefit of older builds of WebKit and Mozilla
-if (!("WebGLFloatArray" in window)) {
-    con.warn("browser is old and is using Canvas array types");
-    WebGLFloatArray = window.CanvasFloatArray;
-}
-if (!("WebGLByteArray" in window))
-    WebGLByteArray = window.CanvasByteArray;
-if (!("WebGLIntArray" in window))
-    WebGLIntArray = window.CanvasIntArray;
-if (!("WebGLShortArray" in window))
-    WebGLShortArray = window.CanvasShortArray;
-if (!("WebGLUnsignedByteArray" in window))
-    WebGLUnsignedByteArray = window.CanvasUnsignedByteArray;
-if (!("WebGLUnsignedIntArray" in window))
-    WebGLUnsignedIntArray = window.CanvasUnsignedIntArray;
-if (!("WebGLUnsignedShortArray" in window))
-    WebGLUnsignedShortArray = window.CanvasUnsignedShortArray;
-/* ---------------------------------------------------------------------------- */
 function fixupGL(gl) {
-    if (!gl.getShaderParameter) {
-        gl.getShaderParameter = gl.getShaderi;
-    }
-    if (!gl.getProgramParameter) {
-        gl.getProgramParameter = gl.getProgrami;
-    }
+    // Nothing to fix up right now - wait until the next compat break :)
 }
 function emptyTexImage2D(gl, internalFormat, width, height, format, type) {
     // TODO: remove this when browsers stop sucking
