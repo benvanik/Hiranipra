@@ -39,7 +39,7 @@ var HNModelDrawer = function(gl, modelCache) {
         var gl = this.gl;
         gl.disableVertexAttribArray(this.a_tex0);
         gl.disableVertexAttribArray(this.a_pos);
-        gl.useProgram(null);
+        //gl.useProgram(null);
     };
 }
 
@@ -74,7 +74,7 @@ HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list) {
 
         // TODO: add to a batch list of things to draw, sort, then draw them
 
-        if( false ){//if (drawLodRef) {
+        if (false) {//if (drawLodRef) {
             // Have something to draw
             //con.debug("something to draw - lod " + drawLodRef.lod.lodIndex + "." + drawLodRef.blockIndex);
         } else {

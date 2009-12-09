@@ -244,7 +244,7 @@
                 this.staticProgram.pass1.end = function() {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
-                    gl.useProgram(null);
+                    //gl.useProgram(null);
                 };
                 this.staticProgram.pass2.begin = function(viewProjMatrix, modelMatrix) {
                     gl.useProgram(this.id);
@@ -257,7 +257,7 @@
                 this.staticProgram.pass2.end = function() {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
-                    gl.useProgram(null);
+                    //gl.useProgram(null);
                 };
 
                 if (this.objs) {

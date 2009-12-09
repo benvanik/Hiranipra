@@ -31,7 +31,7 @@ var HNGLGrid = function(gl, blocks, spacing) {
         this.program.end = function() {
             var gl = this.gl;
             gl.disableVertexAttribArray(this.a_pos);
-            gl.useProgram(null);
+            //gl.useProgram(null);
         };
 
         var positions = [];
