@@ -133,7 +133,7 @@
         }
 
         app.loadMegaTexture = function(textureNumber) {
-            var gl = app.gl;
+            var gl = this.gl;
             try {
                 con.beginGroup("App - loading texture " + textureNumber);
             } finally {

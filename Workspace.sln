@@ -53,10 +53,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{6C9580
 		Shared\Models\HNModelCache.js = Shared\Models\HNModelCache.js
 		Shared\Models\HNModelDrawer.js = Shared\Models\HNModelDrawer.js
 		Shared\Models\HNModelInstance.js = Shared\Models\HNModelInstance.js
-		Shared\Models\HNModelLoader.js = Shared\Models\HNModelLoader.js
-		Shared\Models\HNModelLOD.js = Shared\Models\HNModelLOD.js
 		Shared\Models\HNModelMaterial.js = Shared\Models\HNModelMaterial.js
 		Shared\Models\HNModelPack.js = Shared\Models\HNModelPack.js
+		Shared\Models\HNModelPackLOD.js = Shared\Models\HNModelPackLOD.js
 		Shared\Models\README = Shared\Models\README
 	EndProjectSection
 EndProject
