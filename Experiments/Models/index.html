@@ -178,7 +178,8 @@
                 var inst = this.instances[n];
                 // ?
             }
-            this.modelDrawer.drawList(this.viewProjStack, this.modelStack, this.instances);
+            this.modelDrawer.drawList(this.viewProjStack, this.modelStack, this.instances, 1);
+            this.modelDrawer.drawList(this.viewProjStack, this.modelStack, this.instances, 2);
 
             if (this.profileGraph) {
                 var endTime = ((new Date().getTime()) - startTime);

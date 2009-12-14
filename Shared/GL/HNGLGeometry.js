@@ -104,6 +104,18 @@ HNGLGeometry.prototype.draw = function(attribLocations) {
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 }
+HNGLGeometry.prototype.drawRegion = function(attribLocations, primitiveType, indexOffset, indexCount) {
+    var gl = this.gl;
+    for (var n = 0; n < attribLocations.length; n++) {
+        var buffer = this.dataBuffers[n];
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer.handle);
+        gl.vertexAttribPointer(attribLocations[n], buffer.count, buffer.type, false, 0, 0);
+    }
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    gl.drawElements(primitiveType, indexCount, gl.UNSIGNED_SHORT, indexOffset);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
 
 HNGLGeometry.quad = function(gl) {
     var geo = new HNGLGeometry(gl, gl.TRIANGLES, 2);

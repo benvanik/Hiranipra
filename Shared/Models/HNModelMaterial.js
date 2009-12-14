@@ -1,12 +1,12 @@
-var HNModelMaterial = function(id, texture, effect) {
+var HNModelMaterial = function(id, texture, program) {
     this.id = id;
     this.texture = texture;
-    this.effect = effect;
+    this.program = program;
     if (this.texture) {
         this.texture.refCount++;
     }
-    if (this.effect) {
-        this.effect.refCount++;
+    if (this.program) {
+        this.program.refCount++;
     }
     this.refCount = 0;
 }
@@ -15,8 +15,8 @@ HNModelMaterial.prototype.dispose = function() {
         this.texture.refCount--;
         this.texture = null;
     }
-    if (this.effect) {
-        this.effect.refCount--;
-        this.effect = null;
+    if (this.program) {
+        this.program.refCount--;
+        this.program = null;
     }
 }

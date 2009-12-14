@@ -1,6 +1,8 @@
-var HNModelDrawer = function(gl, modelCache) {
+var HNModelDrawer = function(gl, modelCache, megaTextureCache, feedbackBuffer) {
     this.gl = gl;
     this.modelCache = modelCache;
+    this.megaTextureCache = megaTextureCache;
+    this.feedbackBuffer = feedbackBuffer;
 
     // Setup default geometry for loading objects
     this.loadingGeometry = HNGLGeometry.sphere(gl, 1, 8, 8);
@@ -43,7 +45,7 @@ var HNModelDrawer = function(gl, modelCache) {
     };
 }
 
-HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list) {
+HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list, pass) {
     var gl = this.gl;
     for (var n = 0; n < list.length; n++) {
         var instance = list[n];
@@ -52,36 +54,63 @@ HNModelDrawer.prototype.drawList = function(viewProjStack, modelStack, list) {
         modelStack.multiplyBy(instance.modelMatrix);
         var modelViewProjMatrix = modelStack.current.multiply(viewProjStack.current);
 
-        // Calculate distance from camera/size/etc for LOD
-        // TODO: model LOD
         var desiredLOD = 1;
-
-        // Find an LOD to draw (request if needed)
         var drawLodRef = null;
-        if (instance.pendingFill == false) {
-            for (var lodIndex = desiredLOD; lodIndex >= 0; lodIndex--) {
-                var lodRef = instance.model.lods[lodIndex];
-                if (lodRef.block) {
-                    // Block found - use it
-                    drawLodRef = lodRef;
-                    break;
-                } else {
-                    // Request block
-                    this.modelCache.requestModelPackLODBlock(instance.model.modelPack, lodIndex, lodRef.blockIndex);
+
+        if (pass == 1) {
+            // Calculate distance from camera/size/etc for LOD
+            // TODO: model LOD
+            desiredLOD = 1;
+
+            // Find an LOD to draw (request if needed)
+            if (instance.pendingFill == false) {
+                for (var lodIndex = desiredLOD; lodIndex >= 0; lodIndex--) {
+                    var lodRef = instance.model.lods[lodIndex];
+                    if (lodRef.block) {
+                        // Block found - use it
+                        drawLodRef = lodRef;
+                        break;
+                    } else {
+                        // Request block
+                        this.modelCache.requestModelPackLODBlock(instance.model.modelPack, lodIndex, lodRef.blockIndex);
+                    }
                 }
             }
+
+            instance.lastDesiredLOD = desiredLOD;
+            instance.lastDrawLodRef = drawLodRef;
+        } else {
+            // Pull out the last used parameters
+            desiredLOD = instance.lastDesiredLOD;
+            drawLodRef = instance.lastDrawLodRef;
         }
 
         // TODO: add to a batch list of things to draw, sort, then draw them
 
-        if (false) {//if (drawLodRef) {
-            // Have something to draw
-            //con.debug("something to draw - lod " + drawLodRef.lod.lodIndex + "." + drawLodRef.blockIndex);
+        if (pass == 1) {
+            // Draw only for the sake of megatextures
+            if (drawLodRef) {
+                var material = instance.model.material;
+                material.program.pass1.begin(viewProjStack.current, modelStack.current);
+                this.megaTextureCache.setPass1Uniforms(material.program.pass1, this.feedbackBuffer, material.texture);
+                // draw
+                material.program.pass1.end();
+            }
         } else {
-            // Nothing to draw - do dummy geometry
-            this.loadingProgram.begin(modelViewProjMatrix);
-            this.loadingGeometry.draw([this.loadingProgram.a_pos, this.loadingProgram.a_tex0]);
-            this.loadingProgram.end();
+            if (drawLodRef) {
+                // Have something to draw
+                var material = instance.model.material;
+                material.program.pass2.begin(viewProjStack.current, modelStack.current);
+                this.megaTextureCache.setPass2Uniforms(material.program.pass2, material.texture);
+                // draw
+                material.program.pass2.end();
+                //con.debug("something to draw - lod " + drawLodRef.lod.lodIndex + "." + drawLodRef.blockIndex);
+            } else {
+                // Nothing to draw - do dummy geometry
+                this.loadingProgram.begin(modelViewProjMatrix);
+                this.loadingGeometry.draw([this.loadingProgram.a_pos, this.loadingProgram.a_tex0]);
+                this.loadingProgram.end();
+            }
         }
 
         modelStack.pop();

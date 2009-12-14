@@ -2,6 +2,62 @@ var HNModelPack = function(gl, url) {
     this.gl = gl;
     this.url = url;
 
+    var defaultvs =
+        [
+            "uniform mat4 u_viewProjMatrix;",
+            "uniform mat4 u_modelMatrix;",
+            "attribute vec3 a_pos;",
+            "attribute vec3 a_normal;",
+            "attribute vec2 a_tex0;",
+            "varying vec2 v_tex0;",
+            "void main() {",
+            "    gl_Position = ( u_viewProjMatrix * u_modelMatrix ) * vec4( a_pos, 1.0 );",
+            "    v_tex0 = a_tex0;",
+            "}"
+        ].join("\n");
+    var defaultfs1 =
+        [
+            "varying vec2 v_tex0;",
+            "void main() {",
+            "    gl_FragColor = MTCalculateTileKeyRGBA( v_tex0 );",
+            "}"
+        ].join("\n");
+    var defaultfs2 =
+        [
+            "varying vec2 v_tex0;",
+            "void main() {",
+            "    //gl_FragColor = MTSampleBilinear( v_tex0 );",
+            "    //gl_FragColor = MTSampleTrilinear( v_tex0 );",
+            "    gl_FragColor = vec4( 1.0 );",
+            "}"
+        ].join("\n");
+    this.defaultProgram = {
+        pass1: HNGLProgram.fromSources(gl,
+                            HNMegaTextureShaders.prependPass1vs(defaultvs),
+                            HNMegaTextureShaders.prependPass1fs(defaultfs1)
+                        ),
+        pass2: HNGLProgram.fromSources(gl,
+                            HNMegaTextureShaders.prependPass2vs(defaultvs),
+                            HNMegaTextureShaders.prependPass2fs(defaultfs2)
+                        )
+    };
+    this.defaultProgram.pass1.begin = this.defaultProgram.pass2.begin = function(viewProjMatrix, modelMatrix) {
+        var gl = this.gl;
+        gl.useProgram(this.id);
+        gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
+        gl.uniformMatrix4fv(this.u_modelMatrix, false, modelMatrix.asArray());
+        gl.enableVertexAttribArray(this.a_pos);
+        gl.enableVertexAttribArray(this.a_normal);
+        gl.enableVertexAttribArray(this.a_tex0);
+    };
+    this.defaultProgram.pass1.end = this.defaultProgram.pass2.end = function() {
+        var gl = this.gl;
+        gl.disableVertexAttribArray(this.a_tex0);
+        gl.disableVertexAttribArray(this.a_normal);
+        gl.disableVertexAttribArray(this.a_pos);
+        //gl.useProgram(null);
+    };
+
     this.textures = {};
     this.materials = {};
     this.models = {};
@@ -61,7 +117,7 @@ HNModelPack.prototype.fill = function(json) {
         if (!texture) {
             con.warn("texture not found: " + jmaterial.texture);
         }
-        var material = new HNModelMaterial(jmaterial.id, texture, null); // TODO: effect
+        var material = new HNModelMaterial(jmaterial.id, texture, this.defaultProgram); // TODO: effect
         this.materials[jmaterial.id] = material;
     }
     for (var n = 0; n < json.models.length; n++) {
