@@ -47,6 +47,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MegaTextures", "MegaTexture
 		Shared\MegaTextures\HNMegaTextureTile.js = Shared\MegaTextures\HNMegaTextureTile.js
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TiledMaps", "TiledMaps", "{4C286146-E7C9-414B-AAD6-4B1F9C47B0B2}"
+	ProjectSection(SolutionItems) = preProject
+		Experiments\TiledMaps\index.html = Experiments\TiledMaps\index.html
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,5 +61,6 @@ Global
 		{0F3AAA71-2CB0-4B83-9FC2-50CBAB336A94} = {A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}
 		{90120C90-6D6F-4ADA-8BE1-A47750AAF7FF} = {C31DFC40-281E-4EC9-845B-83298229A458}
 		{DE058FC3-655C-475E-9503-2E147CAABF93} = {C31DFC40-281E-4EC9-845B-83298229A458}
+		{4C286146-E7C9-414B-AAD6-4B1F9C47B0B2} = {C31DFC40-281E-4EC9-845B-83298229A458}
 	EndGlobalSection
 EndGlobal
