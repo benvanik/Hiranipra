@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Hiranipra Experiment</title>
+    <title>Hiranipra Tiled Maps Experiment</title>
 
     <script type="text/javascript" src="../../Dependencies/jquery-1.3.2.min.js"></script>
 
@@ -20,10 +20,14 @@
     <script type="text/javascript" src="../../Shared/HNTimer.js"></script>
 
     <script type="text/javascript" src="../../Shared/HNProfileGraph.js"></script>
+    
+    <script type="text/javascript" src="../../Shared/HN2DViewport.js"></script>
 
     <script type="text/javascript">
         var app = {};
         app.initialize = function(displayCanvas, profileGraphCanvas, profileGraphText) {
+            this.displayCanvas = displayCanvas;
+
             if (!this.loadAssets()) {
                 return;
             }
@@ -34,6 +38,10 @@
             }
 
             this.keyboard = new HNKeyboard();
+            this.camera = {
+                x: 0,
+                y: 0
+            };
 
             this.timer = new HNTimer([this, this.update], [this, this.render]);
             this.timer.start();
@@ -43,6 +51,21 @@
             try {
                 con.beginGroup("App - loading assets");
 
+                this.tileSheet = document.createElement("img");
+                this.tileSheet.src = "Tiles.png";
+
+                this.map = {
+                    width: 1024,
+                    height: 1024,
+                    tileSize: 32,
+                    tiles: []
+                };
+                this.map.tiles[this.map.width * this.map.height] = 0;
+                for (var y = 0; y < this.map.height; y++) {
+                    for (var x = 0; x < this.map.width; x++) {
+                        this.map.tiles[(y * this.map.width) + x] = Math.floor(Math.random() * 4);
+                    }
+                }
 
                 return true;
             } finally {
@@ -93,6 +116,34 @@
 
         app.render = function(delta) {
             var startTime = (new Date().getTime());
+
+            var ctx = this.displayCanvas.getContext("2d");
+            ctx.fillStyle = "rgb(0,0,0)";
+            ctx.fillRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+
+            ctx.mozImageSmoothingEnabled = false;
+
+            var tileSize = this.map.tileSize;
+            var minx = Math.max(Math.floor(this.camera.x / tileSize), 0);
+            var miny = Math.max(Math.floor(this.camera.y / tileSize), 0);
+            var maxx = Math.min(Math.ceil((this.camera.x + this.displayCanvas.width) / tileSize), this.map.width);
+            var maxy = Math.min(Math.ceil((this.camera.y + this.displayCanvas.height) / tileSize), this.map.height);
+
+            // TODO: offset
+            var offsetx = ((this.camera.x / tileSize) - Math.floor(this.camera.x / tileSize)) * tileSize;
+            var offsety = ((this.camera.y / tileSize) - Math.floor(this.camera.y / tileSize)) * tileSize;
+            var dx = -offsetx;
+            var dy = -offsety;
+            for (var y = miny; y <= maxy; y++, dy += tileSize) {
+                for (var x = minx; x <= maxx; x++, dx += tileSize) {
+                    var tileIndex = this.map.tiles[(y * this.map.width) + x];
+                    // TODO: rows
+                    var sx = tileIndex * tileSize;
+                    var sy = 0;
+                    ctx.drawImage(this.tileSheet, sx, sy, tileSize, tileSize, dx, dy, tileSize, tileSize);
+                }
+                dx = -offsetx;
+            }
 
             if (this.profileGraph) {
                 var endTime = ((new Date().getTime()) - startTime);

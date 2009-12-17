@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}"
 	ProjectSection(SolutionItems) = preProject
+		Shared\HN2DViewport.js = Shared\HN2DViewport.js
 		Shared\HNConfig.js = Shared\HNConfig.js
 		Shared\HNConsole.js = Shared\HNConsole.js
 		Shared\HNFPSCamera.js = Shared\HNFPSCamera.js
@@ -50,6 +51,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TiledMaps", "TiledMaps", "{4C286146-E7C9-414B-AAD6-4B1F9C47B0B2}"
 	ProjectSection(SolutionItems) = preProject
 		Experiments\TiledMaps\index.html = Experiments\TiledMaps\index.html
+		Experiments\TiledMaps\Tiles.png = Experiments\TiledMaps\Tiles.png
 	EndProjectSection
 EndProject
 Global
