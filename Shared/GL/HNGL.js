@@ -30,8 +30,7 @@ function HNGLCreate(canvas) {
         }
     };
     var gl = null;
-    gl = gl || tryGetContext(canvas, 'moz-webgl');
-    gl = gl || tryGetContext(canvas, 'webkit-3d');
+    gl = gl || tryGetContext(canvas, 'experimental-webgl');
     con.assert(gl, "null gl context");
     if (!gl) {
         con.error("unable to get a valid WebGL context");

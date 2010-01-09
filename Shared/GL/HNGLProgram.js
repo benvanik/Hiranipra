@@ -68,13 +68,13 @@ HNGLProgram.fromShaders = function(gl, vertexShader, fragmentShader) {
     program.uniformCount = gl.getProgramParameter(id, gl.ACTIVE_UNIFORMS);
     for (var n = 0; n < program.uniformCount; n++) {
         var uniform = gl.getActiveUniform(id, n);
-        program[uniform.name] = n;
+        program[uniform.name] = gl.getUniformLocation(id, uniform.name);
         con.debug("uniform " + uniform.name + " : " + n);
     }
     program.attribCount = gl.getProgramParameter(id, gl.ACTIVE_ATTRIBUTES);
     for (var n = 0; n < program.attribCount; n++) {
         var attrib = gl.getActiveAttrib(id, n);
-        program[attrib.name] = n;
+        program[attrib.name] = gl.getAttribLocation(id, attrib.name);
         con.debug("attrib " + attrib.name + " : " + n);
     }
     con.info("successfully linked program");

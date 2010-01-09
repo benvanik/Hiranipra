@@ -213,22 +213,44 @@ HNQuaternion.prototype.transformVec3 = function(v) {
 12, 13, 14, 15
 */
 var HNMatrix4x4 = function(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44) {
-    if (!m11) {
-        this.el = [
-            0, 0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, 0
-        ];
-    } else if (typeOf(m11) == 'array') {
-        this.el = m11;
+    if (WebGLFloatArray) {
+        // If we are in a browser that supports WebGL, use a WebGLFloatArray as our storage
+        // This makes passing matrices to gl faster
+        if (!m11) {
+            this.el = new WebGLFloatArray([
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            ]);
+        } else if (typeOf(m11) == 'array') {
+            this.el = new WebGLFloatArray(m11);
+        } else {
+            this.el = new WebGLFloatArray([
+                m11, m12, m13, m14,
+                m21, m22, m23, m24,
+                m31, m32, m33, m34,
+                m41, m42, m43, m44
+            ]);
+        }
     } else {
-        this.el = [
-            m11, m12, m13, m14,
-            m21, m22, m23, m24,
-            m31, m32, m33, m34,
-            m41, m42, m43, m44
-        ];
+        if (!m11) {
+            this.el = [
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            ];
+        } else if (typeOf(m11) == 'array') {
+            this.el = m11;
+        } else {
+            this.el = [
+                m11, m12, m13, m14,
+                m21, m22, m23, m24,
+                m31, m32, m33, m34,
+                m41, m42, m43, m44
+            ];
+        }
     }
 }
 HNMatrix4x4.prototype.clone = function() {
@@ -344,7 +366,11 @@ HNMatrix4x4.prototype.multiplyBy = function(other) {
         this.el[12] * other.el[2] + this.el[13] * other.el[6] + this.el[14] * other.el[10] + this.el[15] * other.el[14],
         this.el[12] * other.el[3] + this.el[13] * other.el[7] + this.el[14] * other.el[11] + this.el[15] * other.el[15]
     ];
-    this.el = newEl;
+    if (WebGLFloatArray) {
+        this.el = new WebGLFloatArray(newEl);
+    } else {
+        this.el = newEl;
+    }
     return this;
 }
 HNMatrix4x4.prototype.multiplyVec3 = function(v) {
@@ -425,16 +451,20 @@ HNMatrix4x4.prototype.invert = function() {
         -(this.el[0] * t15 - this.el[1] * t16 + this.el[2] * t17) * inverseDet,
          (this.el[0] * t21 - this.el[1] * t22 + this.el[2] * t23) * inverseDet
     ];
-    this.el = newEl;
+    if (WebGLFloatArray) {
+        this.el = new WebGLFloatArray(newEl);
+    } else {
+        this.el = newEl;
+    }
     return this;
 }
 HNMatrix4x4.prototype.transpose = function() {
-    this.el.swap(1, 4);
-    this.el.swap(2, 8);
-    this.el.swap(3, 12);
-    this.el.swap(6, 9);
-    this.el.swap(7, 13);
-    this.el.swap(11, 14);
+    Array.swap(this.el, 1, 4);
+    Array.swap(this.el, 2, 8);
+    Array.swap(this.el, 3, 12);
+    Array.swap(this.el, 6, 9);
+    Array.swap(this.el, 7, 13);
+    Array.swap(this.el, 11, 14);
     return this;
 }
 HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
