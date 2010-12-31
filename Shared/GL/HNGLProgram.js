@@ -1,13 +1,13 @@
-var HNGLShader = function(gl, id) {
+var HNGLShader = function (gl, id) {
     this.gl = gl;
     this.id = id;
 }
-HNGLShader.prototype.dispose = function() {
+HNGLShader.prototype.dispose = function () {
     this.gl.deleteShader(this.id);
     this.id = null;
     this.gl = null;
 }
-HNGLShader.fromSource = function(gl, type, source) {
+HNGLShader.fromSource = function (gl, type, source) {
     var id = gl.createShader(type);
     gl.shaderSource(id, source);
     gl.compileShader(id);
@@ -20,7 +20,7 @@ HNGLShader.fromSource = function(gl, type, source) {
     // ??
     return shader;
 }
-HNGLShader.fromScriptElement = function(gl, element) {
+HNGLShader.fromScriptElement = function (gl, element) {
     var type;
     switch (element.type) {
         case "x-shader/x-vertex":
@@ -37,18 +37,18 @@ HNGLShader.fromScriptElement = function(gl, element) {
     return HNGLShader.fromSource(gl, type, source);
 }
 
-var HNGLProgram = function(gl, id) {
+var HNGLProgram = function (gl, id) {
     this.gl = gl;
     this.id = id;
 }
-HNGLProgram.prototype.dispose = function() {
+HNGLProgram.prototype.dispose = function () {
     this.gl.deleteProgram(this.id);
     this.id = null;
     this.gl = null;
 }
-HNGLProgram.prototype.begin = function() { }
-HNGLProgram.prototype.end = function() { }
-HNGLProgram.fromShaders = function(gl, vertexShader, fragmentShader) {
+HNGLProgram.prototype.begin = function () { }
+HNGLProgram.prototype.end = function () { }
+HNGLProgram.fromShaders = function (gl, vertexShader, fragmentShader) {
     var id = gl.createProgram();
     gl.attachShader(id, vertexShader.id);
     gl.attachShader(id, fragmentShader.id);
@@ -80,7 +80,7 @@ HNGLProgram.fromShaders = function(gl, vertexShader, fragmentShader) {
     con.info("successfully linked program");
     return program;
 }
-HNGLProgram.fromSources = function(gl, vertexSource, fragmentSource) {
+HNGLProgram.fromSources = function (gl, vertexSource, fragmentSource) {
     var vertexShader = null;
     var fragmentShader = null;
     try {
@@ -101,7 +101,7 @@ HNGLProgram.fromSources = function(gl, vertexSource, fragmentSource) {
         }
     }
 }
-HNGLProgram.fromScriptElements = function(gl, vertexElement, fragmentElement) {
+HNGLProgram.fromScriptElements = function (gl, vertexElement, fragmentElement) {
     var vertexShader = null;
     var fragmentShader = null;
     try {

@@ -1,4 +1,4 @@
-var HNGLQuadDrawer = function(gl) {
+var HNGLQuadDrawer = function (gl) {
     con.beginGroupCollapsed("HNGL - creating quad drawer");
     try {
         this.texProgram = HNGLProgram.fromSources(gl,
@@ -40,27 +40,27 @@ var HNGLQuadDrawer = function(gl) {
             return;
         }
 
-        this.texProgram.begin = function(viewProjMatrix) {
+        this.texProgram.begin = function (viewProjMatrix) {
             var gl = this.gl;
             gl.useProgram(this.id);
             gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
             gl.enableVertexAttribArray(this.a_pos);
             gl.enableVertexAttribArray(this.a_tex0);
         };
-        this.texProgram.end = function() {
+        this.texProgram.end = function () {
             var gl = this.gl;
             gl.disableVertexAttribArray(this.a_tex0);
             gl.disableVertexAttribArray(this.a_pos);
             //gl.useProgram(null);
         };
 
-        this.colorProgram.begin = function(viewProjMatrix) {
+        this.colorProgram.begin = function (viewProjMatrix) {
             var gl = this.gl;
             gl.useProgram(this.id);
             gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
             gl.enableVertexAttribArray(this.a_pos);
         };
-        this.colorProgram.end = function() {
+        this.colorProgram.end = function () {
             var gl = this.gl;
             gl.disableVertexAttribArray(this.a_pos);
             //gl.useProgram(null);
@@ -75,7 +75,7 @@ var HNGLQuadDrawer = function(gl) {
         con.endGroup();
     }
 }
-HNGLQuadDrawer.prototype.dispose = function() {
+HNGLQuadDrawer.prototype.dispose = function () {
     var gl = this.gl;
     gl.deleteBuffer(this.tex0Buffer);
     this.tex0Buffer = null;
@@ -91,14 +91,14 @@ HNGLQuadDrawer.prototype.dispose = function() {
     }
     this.gl = null;
 }
-HNGLQuadDrawer.prototype.beginBatch = function(viewportWidth, viewportHeight) {
+HNGLQuadDrawer.prototype.beginBatch = function (viewportWidth, viewportHeight) {
     var gl = this.gl;
     gl.viewport(0, 0, viewportWidth, viewportHeight);
     this.viewProjMatrix = HNMatrix4x4.ortho(0, viewportWidth, viewportHeight, 0, 0, 1);
 }
-HNGLQuadDrawer.prototype.endBatch = function() {
+HNGLQuadDrawer.prototype.endBatch = function () {
 }
-HNGLQuadDrawer.prototype.draw = function(texture, sx, sy, sw, sh, flipY) {
+HNGLQuadDrawer.prototype.draw = function (texture, sx, sy, sw, sh, flipY) {
     var gl = this.gl;
 
     // TODO: batching
@@ -134,7 +134,7 @@ HNGLQuadDrawer.prototype.draw = function(texture, sx, sy, sw, sh, flipY) {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     this.texProgram.end();
 }
-HNGLQuadDrawer.prototype.fill = function(r, g, b, a, sx, sy, sw, sh) {
+HNGLQuadDrawer.prototype.fill = function (r, g, b, a, sx, sy, sw, sh) {
     var gl = this.gl;
 
     // TODO: batching

@@ -1,5 +1,5 @@
 // callbacks are of the form [this, function]
-var HNTimer = function(updateCallback, renderCallback) {
+var HNTimer = function (updateCallback, renderCallback) {
     this.tickCount = 0;
     this.updateCount = 0;
     this.updateInterval = 1;
@@ -14,18 +14,18 @@ var HNTimer = function(updateCallback, renderCallback) {
     this.intervalId = null;
     this.active = false;
 }
-HNTimer.prototype.start = function() {
+HNTimer.prototype.start = function () {
     this.stop();
     this.lastUpdateTime = (new Date().getTime());
     this.lastRenderTime = (new Date().getTime());
     var minInterval = Math.min(this.updateInterval, this.renderInterval);
     var timer = this;
-    this.intervalId = window.setInterval(function() {
+    this.intervalId = window.setInterval(function () {
         timer.tick();
     }, 16 * minInterval);
     this.active = true;
 }
-HNTimer.prototype.stop = function() {
+HNTimer.prototype.stop = function () {
     if (!this.active) {
         return;
     }
@@ -33,7 +33,7 @@ HNTimer.prototype.stop = function() {
     this.intervalId = null;
     this.active = false;
 }
-HNTimer.prototype.tick = function() {
+HNTimer.prototype.tick = function () {
     var time = (new Date().getTime());
     this.tickCount++;
     if (this.tickCount % this.updateInterval == 0) {

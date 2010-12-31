@@ -1,7 +1,7 @@
 // Always call setCallbacks - your callbacks may be called right away if the tile is already
 // loaded, or may be called at some point in the future
 
-var HNMegaTextureTile = function(megaTexture, level, tileX, tileY) {
+var HNMegaTextureTile = function (megaTexture, level, tileX, tileY) {
     this.megaTexture = megaTexture;
     this.level = level;
     this.tileX = tileX;
@@ -10,7 +10,7 @@ var HNMegaTextureTile = function(megaTexture, level, tileX, tileY) {
     this.isPresent = false;
     this.lastUse = 0; // last frame number the tile was requested on
 }
-HNMegaTextureTile.prototype.setCallbacks = function(target, successCallback, failureCallback) {
+HNMegaTextureTile.prototype.setCallbacks = function (target, successCallback, failureCallback) {
     if (this.isLoading == false) {
         if (this.isPresent == true) {
             successCallback.call(target, this);
@@ -23,17 +23,17 @@ HNMegaTextureTile.prototype.setCallbacks = function(target, successCallback, fai
         this.failureCallback = failureCallback;
     }
 }
-HNMegaTextureTile.fromUrl = function(megaTexture, level, tileX, tileY, url) {
+HNMegaTextureTile.fromUrl = function (megaTexture, level, tileX, tileY, url) {
     var tile = new HNMegaTextureTile(megaTexture, level, tileX, tileY);
     var img = new Image();
-    img.onload = function() {
+    img.onload = function () {
         tile.isLoading = false;
         tile.isPresent = true;
         if (tile.successCallback) {
             tile.successCallback.call(tile.callbackTarget, tile);
         }
     }
-    img.onerror = function() {
+    img.onerror = function () {
         tile.isLoading = false;
         tile.isPresent = false;
         if (tile.failureCallback) {
@@ -44,11 +44,11 @@ HNMegaTextureTile.fromUrl = function(megaTexture, level, tileX, tileY, url) {
     tile.img = img;
     return tile;
 }
-HNMegaTextureTile.createPlaceholder = function(megaTexture, level, tileX, tileY) {
+HNMegaTextureTile.createPlaceholder = function (megaTexture, level, tileX, tileY) {
     var tile = new HNMegaTextureTile(megaTexture, level, tileX, tileY);
     return tile;
 }
-HNMegaTextureTile.prototype.beginRequest = function(loader) {
+HNMegaTextureTile.prototype.beginRequest = function (loader) {
     if (this.img) {
         this.img.src = this.url;
     } else {
@@ -65,9 +65,9 @@ HNMegaTextureTile.prototype.beginRequest = function(loader) {
         loader.worker.postMessage(JSON.stringify(message));
     }
 }
-HNMegaTextureTile.prototype.loadImageData = function(canvas) {
+HNMegaTextureTile.prototype.loadImageData = function (canvas) {
 }
-HNMegaTextureTile.prototype.loadPixels = function(width, height, pixels) {
+HNMegaTextureTile.prototype.loadPixels = function (width, height, pixels) {
     this.pixelArray = {
         width: width,
         height: height,
@@ -79,7 +79,7 @@ HNMegaTextureTile.prototype.loadPixels = function(width, height, pixels) {
         this.successCallback.call(this.callbackTarget, this);
     }
 }
-HNMegaTextureTile.prototype.markFailed = function() {
+HNMegaTextureTile.prototype.markFailed = function () {
     this.isLoading = false;
     this.isPresent = false;
     if (this.failureCallback) {
@@ -87,7 +87,7 @@ HNMegaTextureTile.prototype.markFailed = function() {
     }
 }
 // { width:px, height:px, id:texid }
-HNMegaTextureTile.prototype.uploadTexture = function(gl) {
+HNMegaTextureTile.prototype.uploadTexture = function (gl) {
     var id = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, id);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -127,7 +127,7 @@ HNMegaTextureTile.prototype.uploadTexture = function(gl) {
         width: width,
         height: height,
         id: id,
-        dispose: function() {
+        dispose: function () {
             gl.deleteTexture(id);
         }
     };

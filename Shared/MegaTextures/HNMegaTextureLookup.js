@@ -1,4 +1,4 @@
-var HNMegaTextureTileRef = function(tile) {
+var HNMegaTextureTileRef = function (tile) {
     this.megaTexture = tile.megaTexture;
     this.level = tile.level;
     this.tileX = tile.tileX;
@@ -7,16 +7,16 @@ var HNMegaTextureTileRef = function(tile) {
     this.children = [null, null, null, null];
     this.key = [this.megaTexture.uniqueId, this.level, this.tileX, this.tileY].join(",");
 }
-HNMegaTextureTileRef.prototype.bindToSlot = function(n, width, height) {
+HNMegaTextureTileRef.prototype.bindToSlot = function (n, width, height) {
     this.n = n;
     this.width = width;
     this.height = height;
 }
-HNMegaTextureTileRef.prototype.touch = function(frameNumber) {
+HNMegaTextureTileRef.prototype.touch = function (frameNumber) {
     this.lastUse = frameNumber;
 }
 
-var HNMegaTextureLookup = function(textureCache, megaTexture) {
+var HNMegaTextureLookup = function (textureCache, megaTexture) {
     this.textureCache = textureCache;
     var gl = this.textureCache.gl;
 
@@ -38,22 +38,22 @@ var HNMegaTextureLookup = function(textureCache, megaTexture) {
     this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
     this.changes = [];
 }
-HNMegaTextureLookup.prototype.dispose = function() {
+HNMegaTextureLookup.prototype.dispose = function () {
     var gl = this.textureCache.gl;
     this.data = null;
     gl.deleteTexture(this.texture);
     this.texture = null;
 }
-HNMegaTextureLookup.prototype.beginUpdate = function() {
+HNMegaTextureLookup.prototype.beginUpdate = function () {
     var gl = this.textureCache.gl;
 }
-HNMegaTextureLookup.prototype.endUpdate = function() {
+HNMegaTextureLookup.prototype.endUpdate = function () {
     var gl = this.textureCache.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.width, this.height, 0, gl.RGB, gl.UNSIGNED_BYTE, this.data);
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
-HNMegaTextureLookup.prototype.fillTileLevel = function(level, lx, ly, lw, ls, tx, ty) {
+HNMegaTextureLookup.prototype.fillTileLevel = function (level, lx, ly, lw, ls, tx, ty) {
     var levelWidth = 1 << level;
     lw = Math.min(lw, levelWidth - Math.max(lx, ly));
     if (lw <= 0) {
@@ -73,7 +73,7 @@ HNMegaTextureLookup.prototype.fillTileLevel = function(level, lx, ly, lw, ls, tx
         dataIndex += this.stride;
     }
 }
-HNMegaTextureLookup.prototype.recursiveFillTile = function(tileRef) {
+HNMegaTextureLookup.prototype.recursiveFillTile = function (tileRef) {
     // Fill self in
     var tx = Math.floor(tileRef.n % this.textureCache.tilesPerSide);
     var ty = Math.floor(tileRef.n / this.textureCache.tilesPerSide);
@@ -114,7 +114,7 @@ HNMegaTextureLookup.prototype.recursiveFillTile = function(tileRef) {
         }
     }
 }
-HNMegaTextureLookup.prototype.processChanges = function() {
+HNMegaTextureLookup.prototype.processChanges = function () {
     if (this.changes.length == 0) {
         return;
     }

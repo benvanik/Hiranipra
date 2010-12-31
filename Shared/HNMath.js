@@ -1,48 +1,48 @@
-var HNVector3 = function(x, y, z) {
+var HNVector3 = function (x, y, z) {
     this.x = x;
     this.y = y;
     this.z = z;
 }
-HNVector3.prototype.clone = function() {
+HNVector3.prototype.clone = function () {
     return new HNVector3(this.x, this.y, this.z);
 }
-HNVector3.prototype.asArray = function() {
+HNVector3.prototype.asArray = function () {
     return [this.x, this.y, this.z];
 }
-HNVector3.prototype.length = function() {
+HNVector3.prototype.length = function () {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 }
-HNVector3.prototype.lengthSquared = function() {
+HNVector3.prototype.lengthSquared = function () {
     return this.x * this.x + this.y * this.y + this.z * this.z;
 }
-HNVector3.prototype.distanceTo = function(other) {
+HNVector3.prototype.distanceTo = function (other) {
     var dx = other.x - this.x;
     var dy = other.y - this.y;
     var dz = other.z - this.z;
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
-HNVector3.prototype.distanceSquaredTo = function(other) {
+HNVector3.prototype.distanceSquaredTo = function (other) {
     var dx = other.x - this.x;
     var dy = other.y - this.y;
     var dz = other.z - this.z;
     return dx * dx + dy * dy + dz * dz;
 }
-HNVector3.prototype.dot = function(other) {
+HNVector3.prototype.dot = function (other) {
     return this.x * other.x + this.y * other.y + this.z * other.z;
 }
-HNVector3.prototype.cross = function(other) {
+HNVector3.prototype.cross = function (other) {
     return new HNVector3(
         this.y * other.z - this.z * other.y,
         this.z * other.x - this.x * other.z,
         this.x * other.y - this.y * other.x
     );
 }
-HNVector3.prototype.negate = function() {
+HNVector3.prototype.negate = function () {
     this.x *= -1.0;
     this.y *= -1.0;
     this.z *= -1.0;
 }
-HNVector3.prototype.normalize = function() {
+HNVector3.prototype.normalize = function () {
     var lengthSquared = this.x * this.x + this.y * this.y + this.z * this.z;
     if (lengthSquared == 0.0)
         return;
@@ -51,36 +51,36 @@ HNVector3.prototype.normalize = function() {
     this.y *= invSqrt;
     this.z *= invSqrt;
 }
-HNVector3.prototype.add = function(other) {
+HNVector3.prototype.add = function (other) {
     return new HNVector3(
         this.x + other.x,
         this.y + other.y,
         this.z + other.z
     );
 }
-HNVector3.prototype.addTo = function(other) {
+HNVector3.prototype.addTo = function (other) {
     this.x += other.x;
     this.y += other.y;
     this.z += other.z;
 }
-HNVector3.prototype.subtract = function(other) {
+HNVector3.prototype.subtract = function (other) {
     return new HNVector3(
         this.x - other.x,
         this.y - other.y,
         this.z - other.z
     );
 }
-HNVector3.prototype.subtractFrom = function(other) {
+HNVector3.prototype.subtractFrom = function (other) {
     this.x -= other.x;
     this.y -= other.y;
     this.z -= other.z;
 }
-HNVector3.prototype.multiplyScalar = function(scalar) {
+HNVector3.prototype.multiplyScalar = function (scalar) {
     this.x *= scalar;
     this.y *= scalar;
     this.z *= scalar;
 }
-HNVector3.lerp = function(v0, v1, alpha) {
+HNVector3.lerp = function (v0, v1, alpha) {
     return new HNVector3(
         v0.x + alpha * (v1.x - v0.x),
         v0.y + alpha * (v1.y - v0.y),
@@ -88,19 +88,19 @@ HNVector3.lerp = function(v0, v1, alpha) {
     );
 }
 
-var HNVector4 = function(x, y, z, w) {
+var HNVector4 = function (x, y, z, w) {
     this.x = x;
     this.y = y;
     this.z = z;
     this.w = w;
 }
-HNVector4.prototype.clone = function() {
+HNVector4.prototype.clone = function () {
     return new HNVector4(this.x, this.y, this.z, this.w);
 }
-HNVector4.prototype.asArray = function() {
+HNVector4.prototype.asArray = function () {
     return [this.x, this.y, this.z, this.w];
 }
-HNVector4.prototype.normalize = function() {
+HNVector4.prototype.normalize = function () {
     var lengthSquared = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
     if (lengthSquared == 0.0)
         return;
@@ -110,7 +110,7 @@ HNVector4.prototype.normalize = function() {
     this.z *= invSqrt;
     this.w *= invSqrt;
 }
-HNVector4.prototype.add = function(other) {
+HNVector4.prototype.add = function (other) {
     return new HNVector4(
         this.x + other.x,
         this.y + other.y,
@@ -118,13 +118,13 @@ HNVector4.prototype.add = function(other) {
         this.w + other.w
     );
 }
-HNVector4.prototype.addTo = function(other) {
+HNVector4.prototype.addTo = function (other) {
     this.x += other.x;
     this.y += other.y;
     this.z += other.z;
     this.w += other.w;
 }
-HNVector4.prototype.subtract = function(other) {
+HNVector4.prototype.subtract = function (other) {
     return new HNVector4(
         this.x - other.x,
         this.y - other.y,
@@ -132,19 +132,19 @@ HNVector4.prototype.subtract = function(other) {
         this.w - other.w
     );
 }
-HNVector4.prototype.subtractFrom = function(other) {
+HNVector4.prototype.subtractFrom = function (other) {
     this.x -= other.x;
     this.y -= other.y;
     this.z -= other.z;
     this.w -= other.w;
 }
-HNVector4.prototype.multiplyScalar = function(scalar) {
+HNVector4.prototype.multiplyScalar = function (scalar) {
     this.x *= scalar;
     this.y *= scalar;
     this.z *= scalar;
     this.w *= scalar;
 }
-HNVector4.lerp = function(v0, v1, alpha) {
+HNVector4.lerp = function (v0, v1, alpha) {
     return new HNVector4(
         v0.x + alpha * (v1.x - v0.x),
         v0.y + alpha * (v1.y - v0.y),
@@ -153,16 +153,16 @@ HNVector4.lerp = function(v0, v1, alpha) {
     );
 }
 
-var HNQuaternion = function(x, y, z, w) {
+var HNQuaternion = function (x, y, z, w) {
     this.x = x;
     this.y = y;
     this.z = z;
     this.w = w;
 }
-HNQuaternion.prototype.clone = function() {
+HNQuaternion.prototype.clone = function () {
     return new HNQuaternion(this.x, this.y, this.z, this.w);
 }
-HNQuaternion.fromYawPitchRoll = function(yaw, pitch, roll) {
+HNQuaternion.fromYawPitchRoll = function (yaw, pitch, roll) {
     var syaw = Math.sin(yaw / 2.0);
     var cyaw = Math.cos(yaw / 2.0);
     var spitch = Math.sin(pitch / 2.0);
@@ -176,16 +176,16 @@ HNQuaternion.fromYawPitchRoll = function(yaw, pitch, roll) {
         (cyaw * cpitch) * croll + (syaw * spitch) * sroll
     );
 }
-HNQuaternion.prototype.asArray = function() {
+HNQuaternion.prototype.asArray = function () {
     return [this.x, this.y, this.z, this.w];
 }
-HNQuaternion.prototype.length = function() {
+HNQuaternion.prototype.length = function () {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
 }
-HNQuaternion.prototype.lengthSquared = function() {
+HNQuaternion.prototype.lengthSquared = function () {
     return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
 }
-HNQuaternion.prototype.transformVec3 = function(v) {
+HNQuaternion.prototype.transformVec3 = function (v) {
     var xxx = this.x * (this.x + this.x);
     var wxx = this.w * (this.x + this.x);
     var xyy = this.x * (this.y + this.y);
@@ -212,7 +212,7 @@ HNQuaternion.prototype.transformVec3 = function(v) {
 8,  9, 10, 11,
 12, 13, 14, 15
 */
-var HNMatrix4x4 = function(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44) {
+var HNMatrix4x4 = function (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44) {
     if (WebGLFloatArray) {
         // If we are in a browser that supports WebGL, use a WebGLFloatArray as our storage
         // This makes passing matrices to gl faster
@@ -253,7 +253,7 @@ var HNMatrix4x4 = function(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33
         }
     }
 }
-HNMatrix4x4.prototype.clone = function() {
+HNMatrix4x4.prototype.clone = function () {
     return new HNMatrix4x4(
         this.el[0], this.el[1], this.el[2], this.el[3],
         this.el[4], this.el[5], this.el[6], this.el[7],
@@ -261,7 +261,7 @@ HNMatrix4x4.prototype.clone = function() {
         this.el[12], this.el[13], this.el[14], this.el[15]
     );
 }
-HNMatrix4x4.I = function() {
+HNMatrix4x4.I = function () {
     return new HNMatrix4x4([
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -269,7 +269,7 @@ HNMatrix4x4.I = function() {
         0, 0, 0, 1
     ]);
 }
-HNMatrix4x4.T = function(tx, ty, tz) {
+HNMatrix4x4.T = function (tx, ty, tz) {
     return new HNMatrix4x4([
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -277,7 +277,7 @@ HNMatrix4x4.T = function(tx, ty, tz) {
         tx, ty, tz, 1
     ]);
 }
-HNMatrix4x4.S = function(sx, sy, sz) {
+HNMatrix4x4.S = function (sx, sy, sz) {
     return new HNMatrix4x4([
         sx, 0, 0, 0,
         0, sy, 0, 0,
@@ -285,7 +285,7 @@ HNMatrix4x4.S = function(sx, sy, sz) {
         0, 0, 0, 1
     ]);
 }
-HNMatrix4x4.ortho = function(left, right, bottom, top, znear, zfar) {
+HNMatrix4x4.ortho = function (left, right, bottom, top, znear, zfar) {
     var x = 2 / (right - left);
     var y = 2 / (top - bottom);
     var z = 2 / (zfar - znear);
@@ -299,7 +299,7 @@ HNMatrix4x4.ortho = function(left, right, bottom, top, znear, zfar) {
         -tx, -ty, -tz, 1
     );
 }
-HNMatrix4x4.perspective = function(fovy, aspect, znear, zfar) {
+HNMatrix4x4.perspective = function (fovy, aspect, znear, zfar) {
     var sy = 1.0 / Math.tan(fovy / 2.0);
     var sx = sy / aspect;
     return new HNMatrix4x4(
@@ -309,10 +309,10 @@ HNMatrix4x4.perspective = function(fovy, aspect, znear, zfar) {
         0, 0, (znear * zfar) / (znear - zfar), 0
     );
 }
-HNMatrix4x4.prototype.asArray = function() {
+HNMatrix4x4.prototype.asArray = function () {
     return this.el;
 }
-HNMatrix4x4.prototype.isIdentity = function() {
+HNMatrix4x4.prototype.isIdentity = function () {
     return (
         (this.el[0] == 1) && (this.el[5] == 1) && (this.el[10] == 1) && (this.el[15] == 1) &&
         (this.el[1] == 0) && (this.el[2] == 0) && (this.el[3] == 0) &&
@@ -321,12 +321,12 @@ HNMatrix4x4.prototype.isIdentity = function() {
         (this.el[12] == 0) && (this.el[13] == 0) && (this.el[14] == 0)
     );
 }
-HNMatrix4x4.prototype.isAffine = function() {
+HNMatrix4x4.prototype.isAffine = function () {
     return (
         (this.el[3] == 0) && (this.el[7] == 0) && (this.el[11] == 0) && (this.el[15] == 1)
     );
 }
-HNMatrix4x4.prototype.multiply = function(other) {
+HNMatrix4x4.prototype.multiply = function (other) {
     return new HNMatrix4x4(
         this.el[0] * other.el[0] + this.el[1] * other.el[4] + this.el[2] * other.el[8] + this.el[3] * other.el[12],
         this.el[0] * other.el[1] + this.el[1] * other.el[5] + this.el[2] * other.el[9] + this.el[3] * other.el[13],
@@ -347,7 +347,7 @@ HNMatrix4x4.prototype.multiply = function(other) {
     );
     return this;
 }
-HNMatrix4x4.prototype.multiplyBy = function(other) {
+HNMatrix4x4.prototype.multiplyBy = function (other) {
     var newEl = [
         this.el[0] * other.el[0] + this.el[1] * other.el[4] + this.el[2] * other.el[8] + this.el[3] * other.el[12],
         this.el[0] * other.el[1] + this.el[1] * other.el[5] + this.el[2] * other.el[9] + this.el[3] * other.el[13],
@@ -373,14 +373,14 @@ HNMatrix4x4.prototype.multiplyBy = function(other) {
     }
     return this;
 }
-HNMatrix4x4.prototype.multiplyVec3 = function(v) {
+HNMatrix4x4.prototype.multiplyVec3 = function (v) {
     return new HNVector3(
         v.x * this.el[0] + v.y * this.el[4] + v.z * this.el[8] + this.el[12],
         v.x * this.el[1] + v.y * this.el[5] + v.z * this.el[9] + this.el[13],
         v.x * this.el[2] + v.y * this.el[6] + v.z * this.el[10] + this.el[14]
     );
 }
-HNMatrix4x4.prototype.multiplyVec4 = function(v) {
+HNMatrix4x4.prototype.multiplyVec4 = function (v) {
     return new HNVector4(
         v.x * this.el[0] + v.y * this.el[4] + v.z * this.el[8] + v.w * this.el[12],
         v.x * this.el[1] + v.y * this.el[5] + v.z * this.el[9] + v.w * this.el[13],
@@ -388,7 +388,7 @@ HNMatrix4x4.prototype.multiplyVec4 = function(v) {
         v.x * this.el[3] + v.y * this.el[7] + v.z * this.el[11] + v.w * this.el[15]
     );
 }
-HNMatrix4x4.prototype.getDeterminant = function() {
+HNMatrix4x4.prototype.getDeterminant = function () {
     var t00 = this.el[10] * this.el[15] - this.el[11] * this.el[14];
     var t01 = this.el[9] * this.el[15] - this.el[11] * this.el[13];
     var t02 = this.el[8] * this.el[15] - this.el[11] * this.el[12];
@@ -400,7 +400,7 @@ HNMatrix4x4.prototype.getDeterminant = function() {
         this.el[2] * (this.el[4] * t01 - this.el[5] * t02 + this.el[7] * t05) -
         this.el[3] * (this.el[4] * t03 - this.el[5] * t04 + this.el[6] * t05);
 }
-HNMatrix4x4.prototype.invert = function() {
+HNMatrix4x4.prototype.invert = function () {
     var t00 = this.el[10] * this.el[15] - this.el[11] * this.el[14];
     var t01 = this.el[9] * this.el[15] - this.el[11] * this.el[13];
     var t02 = this.el[8] * this.el[15] - this.el[11] * this.el[12];
@@ -458,7 +458,7 @@ HNMatrix4x4.prototype.invert = function() {
     }
     return this;
 }
-HNMatrix4x4.prototype.transpose = function() {
+HNMatrix4x4.prototype.transpose = function () {
     Array.swap(this.el, 1, 4);
     Array.swap(this.el, 2, 8);
     Array.swap(this.el, 3, 12);
@@ -467,7 +467,7 @@ HNMatrix4x4.prototype.transpose = function() {
     Array.swap(this.el, 11, 14);
     return this;
 }
-HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
+HNMatrix4x4.prototype.translate = function (tx, ty, tz) {
     this.el[0] += this.el[3] * tx;
     this.el[1] += this.el[3] * ty;
     this.el[2] += this.el[3] * tz;
@@ -482,7 +482,7 @@ HNMatrix4x4.prototype.translate = function(tx, ty, tz) {
     this.el[14] += this.el[15] * tz;
     return this;
 }
-HNMatrix4x4.prototype.scale = function(sx, sy, sz) {
+HNMatrix4x4.prototype.scale = function (sx, sy, sz) {
     this.el[0] *= sx;
     this.el[1] *= sy;
     this.el[2] *= sz;
@@ -497,7 +497,7 @@ HNMatrix4x4.prototype.scale = function(sx, sy, sz) {
     this.el[14] *= sz;
     return this;
 }
-HNMatrix4x4.prototype.rotateX = function(rads) {
+HNMatrix4x4.prototype.rotateX = function (rads) {
     var m = new HNMatrix4x4(
         1, 0, 0, 0,
         0, Math.cos(rads), -Math.sin(rads), 0,
@@ -507,7 +507,7 @@ HNMatrix4x4.prototype.rotateX = function(rads) {
     this.multiplyBy(m);
     return this;
 }
-HNMatrix4x4.prototype.rotateY = function(rads) {
+HNMatrix4x4.prototype.rotateY = function (rads) {
     var m = new HNMatrix4x4(
         Math.cos(rads), 0, Math.sin(rads), 0,
         0, 1, 0, 0,
@@ -517,7 +517,7 @@ HNMatrix4x4.prototype.rotateY = function(rads) {
     this.multiplyBy(m);
     return this;
 }
-HNMatrix4x4.prototype.rotateZ = function(rads) {
+HNMatrix4x4.prototype.rotateZ = function (rads) {
     var m = new HNMatrix4x4(
         Math.cos(rads), -Math.sin(rads), 0, 0,
         Math.sin(rads), Math.cos(rads), 0, 0,
@@ -528,14 +528,14 @@ HNMatrix4x4.prototype.rotateZ = function(rads) {
     return this;
 }
 
-var HNMatrixStack4x4 = function() {
+var HNMatrixStack4x4 = function () {
     this.stack = [];
     this.current = HNMatrix4x4.I();
 }
-HNMatrixStack4x4.prototype.asArray = function() {
+HNMatrixStack4x4.prototype.asArray = function () {
     return this.current.asArray();
 }
-HNMatrixStack4x4.prototype.push = function(m) {
+HNMatrixStack4x4.prototype.push = function (m) {
     if (m) {
         this.stack.push(this.current.clone());
         this.current = m.clone();
@@ -543,46 +543,46 @@ HNMatrixStack4x4.prototype.push = function(m) {
         this.stack.push(this.current.clone());
     }
 }
-HNMatrixStack4x4.prototype.pop = function() {
+HNMatrixStack4x4.prototype.pop = function () {
     if (this.stack.length == 0) {
         throw "matrix stack underflow";
     }
     this.current = this.stack.pop();
     return this.current;
 }
-HNMatrixStack4x4.prototype.load = function(m) {
+HNMatrixStack4x4.prototype.load = function (m) {
     this.current = m.clone();
 }
-HNMatrixStack4x4.prototype.loadIdentity = function() {
+HNMatrixStack4x4.prototype.loadIdentity = function () {
     this.current = HNMatrix4x4.I();
 }
-HNMatrixStack4x4.prototype.multiplyBy = function(m) {
+HNMatrixStack4x4.prototype.multiplyBy = function (m) {
     this.current.multiplyBy(m);
     return this.current;
 }
-HNMatrixStack4x4.prototype.translate = function(tx, ty, tz) {
+HNMatrixStack4x4.prototype.translate = function (tx, ty, tz) {
     this.current.translate(tx, ty, tz);
     return this.current;
 }
-HNMatrixStack4x4.prototype.scale = function(sx, sy, sz) {
+HNMatrixStack4x4.prototype.scale = function (sx, sy, sz) {
     var m = HNMatrix4x4.S(sx, sy, sz);
     this.current.multiplyBy(m);
     //this.current.scale(sx, sy, sz);
     return this.current;
 }
-HNMatrixStack4x4.prototype.rotateX = function(rads) {
+HNMatrixStack4x4.prototype.rotateX = function (rads) {
     this.current.rotateX(rads);
     return this.current;
 }
-HNMatrixStack4x4.prototype.rotateY = function(rads) {
+HNMatrixStack4x4.prototype.rotateY = function (rads) {
     this.current.rotateY(rads);
     return this.current;
 }
-HNMatrixStack4x4.prototype.rotateZ = function(rads) {
+HNMatrixStack4x4.prototype.rotateZ = function (rads) {
     this.current.rotateZ(rads);
     return this.current;
 }
-HNMatrixStack4x4.prototype.invert = function() {
+HNMatrixStack4x4.prototype.invert = function () {
     this.current.invert();
     return this.current;
 }

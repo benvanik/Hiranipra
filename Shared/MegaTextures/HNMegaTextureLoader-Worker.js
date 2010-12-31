@@ -1,4 +1,4 @@
-onmessage = function(event) {
+onmessage = function (event) {
     // TODO: only parse if required
     //var message = {
     //    key: key,

@@ -2,7 +2,7 @@
 // level 1 = tileSize * 2 x tileSize * 2
 // ...
 
-var HNMegaTexture = function(uniqueId, width, height, tileSize, tileOverlap) {
+var HNMegaTexture = function (uniqueId, width, height, tileSize, tileOverlap) {
     this.uniqueId = uniqueId;
     this.width = width;
     this.height = height;
@@ -14,13 +14,13 @@ var HNMegaTexture = function(uniqueId, width, height, tileSize, tileOverlap) {
     this.maxLevel = this.levelCount - this.levelOffset;
 }
 
-var HNTestMegaTexture = function(uniqueId, width, height, tileSize, tileOverlap) {
+var HNTestMegaTexture = function (uniqueId, width, height, tileSize, tileOverlap) {
     this.canvas = document.createElement("canvas");
     this.canvas.width = tileSize + tileOverlap * 2;
     this.canvas.height = tileSize + tileOverlap * 2;
     HNMegaTexture.call(this, uniqueId, width, height, tileSize, tileOverlap);
 }
-HNTestMegaTexture.prototype.getTileData = function(level, tileX, tileY) {
+HNTestMegaTexture.prototype.getTileData = function (level, tileX, tileY) {
     var realLevel = level + this.levelOffset;
     var levelScale = Math.pow(2, (this.levelCount - realLevel));
     var levelWidth = Math.ceil(this.width / levelScale);
@@ -63,7 +63,7 @@ HNTestMegaTexture.prototype.getTileData = function(level, tileX, tileY) {
     return result;
 }
 
-var HNDeepZoomMegaTexture = function(uniqueId, dziXml, dziUrl) {
+var HNDeepZoomMegaTexture = function (uniqueId, dziXml, dziUrl) {
     // Grab an XML doc
     var xmlDoc = null;
     if (typeOf(dziXml) == "string") {
@@ -94,7 +94,7 @@ var HNDeepZoomMegaTexture = function(uniqueId, dziXml, dziUrl) {
 
     HNMegaTexture.call(this, uniqueId, width, height, tileSize, tileOverlap);
 }
-HNDeepZoomMegaTexture.prototype.getTileUrl = function(level, tileX, tileY) {
+HNDeepZoomMegaTexture.prototype.getTileUrl = function (level, tileX, tileY) {
     var realLevel = level + this.levelOffset;
     var url = [this.contentUrl, realLevel, "/", tileX, "_", tileY, ".", this.tileFormat].join("");
     return url;

@@ -2,51 +2,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Hiranipra MegaTextures Experiment</title>
-
     <script type="text/javascript" src="../../Dependencies/jquery-1.3.2.min.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNUtil.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNConsole.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNConfig.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNShell.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNMath.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNKeyboard.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNFPSCamera.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNTimer.js"></script>
-
     <script type="text/javascript" src="../../Shared/HNProfileGraph.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGL.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGLProgram.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGLGrid.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGLQuadDrawer.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGLFeedbackBuffer.js"></script>
-
     <script type="text/javascript" src="../../Shared/GL/HNGLGeometry.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureTile.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureLookup.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTexture.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureLoader.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureCache.js"></script>
-
     <script type="text/javascript" src="../../Shared/MegaTextures/HNMegaTextureShaders.js"></script>
-
     <script id="simple-mt-vs" type="x-shader/x-vertex">
         uniform mat4 u_viewProjMatrix;
         uniform mat4 u_modelMatrix;
@@ -58,7 +35,6 @@
             v_tex0 = a_tex0;
         }
     </script>
-
     <script id="wavey-mt-vs" type="x-shader/x-vertex">
         uniform mat4 u_viewProjMatrix;
         uniform mat4 u_modelMatrix;
@@ -72,14 +48,12 @@
             v_tex0 = a_tex0;
         }
     </script>
-
     <script id="simple-mt-pass1fs" type="x-shader/x-fragment">
         varying vec2 v_tex0;
         void main() {
             gl_FragColor = MTCalculateTileKeyRGBA( v_tex0 );
         }
     </script>
-
     <script id="simple-mt-pass2fs" type="x-shader/x-fragment">
         varying vec2 v_tex0;
         void main() {
@@ -87,10 +61,9 @@
             gl_FragColor = MTSampleTrilinear( v_tex0 );
         }
     </script>
-
     <script type="text/javascript">
         var app = {};
-        app.initialize = function(displayCanvas, profileGraphCanvas, profileGraphText) {
+        app.initialize = function (displayCanvas, profileGraphCanvas, profileGraphText) {
             app.startTime = (new Date().getTime());
             if (profileGraphCanvas) {
                 this.profileGraph = new HNProfileGraph(200, 20, profileGraphCanvas);
@@ -132,7 +105,7 @@
             this.timer.start();
         }
 
-        app.loadMegaTexture = function(textureNumber) {
+        app.loadMegaTexture = function (textureNumber) {
             var gl = app.gl;
             try {
                 con.beginGroup("App - loading texture " + textureNumber);
@@ -141,7 +114,7 @@
             }
         }
 
-        app.loadMegaTextures = function(textureNumbers) {
+        app.loadMegaTextures = function (textureNumbers) {
             var gl = app.gl;
             try {
                 con.beginGroup("App - loading textures " + textureNumbers.toString());
@@ -199,7 +172,7 @@
             }
         }
 
-        app.switchToTexture = function(textureNumber) {
+        app.switchToTexture = function (textureNumber) {
             this.loadMegaTextures([textureNumber]);
             for (var n = 0; n < this.objs.length; n++) {
                 this.objs[n].megaTexture = this.megaTextures[0];
@@ -207,7 +180,7 @@
             this.megaTextureCache.clear();
         }
 
-        app.switchToScene = function(modelNumber) {
+        app.switchToScene = function (modelNumber) {
             var gl = app.gl;
             try {
                 con.beginGroup("App - switching to model " + modelNumber);
@@ -233,7 +206,7 @@
                         HNMegaTextureShaders.prependPass2fs($("#simple-mt-pass2fs").text())
                     )
                 };
-                this.staticProgram.pass1.begin = function(viewProjMatrix, modelMatrix) {
+                this.staticProgram.pass1.begin = function (viewProjMatrix, modelMatrix) {
                     gl.useProgram(this.id);
                     gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
                     gl.uniformMatrix4fv(this.u_modelMatrix, false, modelMatrix.asArray());
@@ -241,12 +214,12 @@
                     gl.enableVertexAttribArray(this.a_pos);
                     gl.enableVertexAttribArray(this.a_tex0);
                 };
-                this.staticProgram.pass1.end = function() {
+                this.staticProgram.pass1.end = function () {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
                     //gl.useProgram(null);
                 };
-                this.staticProgram.pass2.begin = function(viewProjMatrix, modelMatrix) {
+                this.staticProgram.pass2.begin = function (viewProjMatrix, modelMatrix) {
                     gl.useProgram(this.id);
                     gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
                     gl.uniformMatrix4fv(this.u_modelMatrix, false, modelMatrix.asArray());
@@ -254,7 +227,7 @@
                     gl.enableVertexAttribArray(this.a_pos);
                     gl.enableVertexAttribArray(this.a_tex0);
                 };
-                this.staticProgram.pass2.end = function() {
+                this.staticProgram.pass2.end = function () {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
                     //gl.useProgram(null);
@@ -315,7 +288,7 @@
             }
         }
 
-        app.loadAssets = function() {
+        app.loadAssets = function () {
             var gl = app.gl;
             try {
                 con.beginGroup("App - loading assets");
@@ -347,13 +320,13 @@
             }
         }
 
-        app.update = function(delta) {
+        app.update = function (delta) {
             this.updateInput(delta);
             this.camera.update(delta);
             this.keyboard.endFrame();
         }
 
-        app.updateInput = function(delta) {
+        app.updateInput = function (delta) {
             // ---- Check for some magic key presses ----
             if ((this.keyboard.isDown(116)) || // F5
                 (this.keyboard.isDown(17) && this.keyboard.isDown(82))) // ctrl + r
@@ -373,7 +346,7 @@
                     this.keyboard.clear();
                     // Begin our own check to see when we should resume
                     var resumeObj = new Object();
-                    resumeObj.intervalId = window.setInterval(function() {
+                    resumeObj.intervalId = window.setInterval(function () {
                         if (app.keyboard.isDown(27)) {
                             window.clearInterval(resumeObj.intervalId);
                             app.keyboard.clear();
@@ -436,7 +409,7 @@
             this.camera.updateInput(delta, this.keyboard);
         }
 
-        app.render = function(delta) {
+        app.render = function (delta) {
             var gl = app.gl;
             var startTime = (new Date().getTime());
             this.renderFrameNumber++;
@@ -542,7 +515,6 @@
             );
         }
     </script>
-
 </head>
 <body onload="onLoad();">
     <canvas id="displayCanvas" width="1024" height="600"></canvas>

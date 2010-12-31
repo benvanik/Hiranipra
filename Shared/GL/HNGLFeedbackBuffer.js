@@ -1,4 +1,4 @@
-var HNGLFeedbackBuffer = function(gl, downsample, updateInterval, useDepth) {
+var HNGLFeedbackBuffer = function (gl, downsample, updateInterval, useDepth) {
     this.gl = gl;
     this.downsample = downsample;
     this.updateInterval = updateInterval;
@@ -9,7 +9,7 @@ var HNGLFeedbackBuffer = function(gl, downsample, updateInterval, useDepth) {
     this.framebuffer = gl.createFramebuffer();
     this.depthBuffer = gl.createRenderbuffer();
 }
-HNGLFeedbackBuffer.prototype.dispose = function() {
+HNGLFeedbackBuffer.prototype.dispose = function () {
     var gl = this.gl;
     gl.deleteTexture(this.texture);
     this.texture = null;
@@ -21,7 +21,7 @@ HNGLFeedbackBuffer.prototype.dispose = function() {
     this.framebuffer = null;
     this.gl = null;
 }
-HNGLFeedbackBuffer.prototype.resize = function(viewportWidth, viewportHeight) {
+HNGLFeedbackBuffer.prototype.resize = function (viewportWidth, viewportHeight) {
     var gl = this.gl;
     this.viewportWidth = viewportWidth;
     this.viewportHeight = viewportHeight;
@@ -54,23 +54,23 @@ HNGLFeedbackBuffer.prototype.resize = function(viewportWidth, viewportHeight) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
-HNGLFeedbackBuffer.prototype.begin = function() {
+HNGLFeedbackBuffer.prototype.begin = function () {
     var gl = this.gl;
     gl.viewport(0, 0, this.width, this.height);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 }
-HNGLFeedbackBuffer.prototype.end = function() {
+HNGLFeedbackBuffer.prototype.end = function () {
     var gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.viewportWidth, this.viewportHeight);
 }
-HNGLFeedbackBuffer.prototype.readPixels = function() {
+HNGLFeedbackBuffer.prototype.readPixels = function () {
     var gl = this.gl;
     // NOTE: this only works if our framebuffer is bound and we have the right viewport set
     var pixels = gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
     return {
         width: this.width,
         height: this.height,
-        pixels: ( pixels.data ? pixels.data : pixels )
+        pixels: (pixels.data ? pixels.data : pixels)
     };
 }

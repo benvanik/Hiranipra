@@ -9,7 +9,7 @@ function emptyTexImage2D(gl, internalFormat, width, height, format, type) {
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, null);
     } catch (e) {
         con.warn("browser texImage2D does not accept null - sending up a real blank texture");
-        var pixels = new WebGLUnsignedByteArray(width * height * ( internalFormat == gl.RGBA ? 4 : 3 ) );
+        var pixels = new WebGLUnsignedByteArray(width * height * (internalFormat == gl.RGBA ? 4 : 3));
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, pixels);
     }
 }
@@ -17,7 +17,7 @@ function emptyTexImage2D(gl, internalFormat, width, height, format, type) {
 
 function HNGLCreate(canvas) {
     con.beginGroupCollapsed("HNGL - setting up GL context");
-    var tryGetContext = function(canvas, type) {
+    var tryGetContext = function (canvas, type) {
         try {
             var context = canvas.getContext(type);
             if (context) {

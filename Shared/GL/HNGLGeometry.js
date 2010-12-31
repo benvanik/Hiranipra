@@ -1,13 +1,13 @@
 // TODO: use the index buffer - for some reason, it doesn't work as an element buffer, just as a raw array
 
-var HNGLGeometry = function(gl, primitiveType, primitiveCount) {
+var HNGLGeometry = function (gl, primitiveType, primitiveCount) {
     this.gl = gl;
     this.primitiveType = primitiveType;
     this.primitiveCount = primitiveCount;
     this.dataBuffers = [];
     this.indexBuffer = null;
 }
-HNGLGeometry.prototype.dispose = function() {
+HNGLGeometry.prototype.dispose = function () {
     var gl = this.gl;
     for (var dataBuffer in this.dataBuffers) {
         gl.deleteBuffer(dataBuffer.handle);
@@ -19,7 +19,7 @@ HNGLGeometry.prototype.dispose = function() {
     }
     this.gl = null;
 }
-HNGLGeometry.prototype.setData = function(index, type, count, data) {
+HNGLGeometry.prototype.setData = function (index, type, count, data) {
     var gl = this.gl;
     if (this.dataBuffers[index]) {
         gl.deleteBuffer(this.dataBuffers[index].handle);
@@ -70,7 +70,7 @@ HNGLGeometry.prototype.setData = function(index, type, count, data) {
         count: count
     };
 }
-HNGLGeometry.prototype.setIndices = function(indices) {
+HNGLGeometry.prototype.setIndices = function (indices) {
     var gl = this.gl;
     if (this.indexBuffer) {
         gl.deleteBuffer(this.indexBuffer);
@@ -88,7 +88,7 @@ HNGLGeometry.prototype.setIndices = function(indices) {
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 }
-HNGLGeometry.prototype.draw = function(attribLocations) {
+HNGLGeometry.prototype.draw = function (attribLocations) {
     var gl = this.gl;
     for (var n = 0; n < attribLocations.length; n++) {
         var buffer = this.dataBuffers[n];
@@ -105,7 +105,7 @@ HNGLGeometry.prototype.draw = function(attribLocations) {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 }
 
-HNGLGeometry.quad = function(gl) {
+HNGLGeometry.quad = function (gl) {
     var geo = new HNGLGeometry(gl, gl.TRIANGLES, 2);
     geo.setData(0, gl.FLOAT, 3, [
         -0.5, 0, -0.5,
@@ -123,7 +123,7 @@ HNGLGeometry.quad = function(gl) {
     return geo;
 }
 
-HNGLGeometry.segmentedQuad = function(gl, segments) {
+HNGLGeometry.segmentedQuad = function (gl, segments) {
     var positions = new WebGLFloatArray(segments * segments * 4 * 3);
     var texCoords = new WebGLFloatArray(segments * segments * 4 * 2);
     var indices = new WebGLUnsignedShortArray(segments * segments * 6);
@@ -170,7 +170,7 @@ HNGLGeometry.segmentedQuad = function(gl, segments) {
 
 // From the Apple utils3d.js file released with their demos:
 // http://trac.webkit.org/browser/trunk/WebKitSite/blog-files/webgl/resources/utils3d.js?format=txt
-HNGLGeometry.sphere = function(gl, radius, lats, longs) {
+HNGLGeometry.sphere = function (gl, radius, lats, longs) {
     var positions = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);
     var texCoords = new WebGLFloatArray((lats + 1) * (longs + 1) * 2 * 2);
     var normals = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);

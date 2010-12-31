@@ -1,4 +1,4 @@
-var HNFPSCamera = function() {
+var HNFPSCamera = function () {
     this.position = new HNVector3(0, 0, 0);
     this.yaw = this.pitch = this.roll = 0;
     this.znear = 0.1;
@@ -11,12 +11,12 @@ var HNFPSCamera = function() {
     this.dfov = 0.0;
     this.isDirty = false;
 }
-HNFPSCamera.prototype.resize = function(width, height) {
+HNFPSCamera.prototype.resize = function (width, height) {
     this.viewportWidth = width;
     this.viewportHeight = height;
     this.isDirty = true;
 }
-HNFPSCamera.prototype.update = function(delta) {
+HNFPSCamera.prototype.update = function (delta) {
     if (this.isDirty == false) {
         return false;
     }
@@ -55,31 +55,31 @@ HNFPSCamera.prototype.update = function(delta) {
     this.isDirty = false;
     return true;
 }
-HNFPSCamera.prototype.setPosition = function(x, y, z) {
+HNFPSCamera.prototype.setPosition = function (x, y, z) {
     this.position = new HNVector3(x, y, z);
     this.isDirty = true;
 }
-HNFPSCamera.prototype.setPositionImpulse = function(dx, dy, dz) {
+HNFPSCamera.prototype.setPositionImpulse = function (dx, dy, dz) {
     this.dposition = new HNVector3(dx, dy, dz);
     this.isDirty = true;
 }
-HNFPSCamera.prototype.setYawPitchRoll = function(yaw, pitch, roll) {
+HNFPSCamera.prototype.setYawPitchRoll = function (yaw, pitch, roll) {
     this.yaw = yaw;
     this.pitch = pitch;
     this.roll = roll;
     this.isDirty = true;
 }
-HNFPSCamera.prototype.setYawPitchRollImpulse = function(dyaw, dpitch, droll) {
+HNFPSCamera.prototype.setYawPitchRollImpulse = function (dyaw, dpitch, droll) {
     this.dyaw = dyaw;
     this.dpitch = dpitch;
     this.droll = droll;
     this.isDirty = true;
 }
-HNFPSCamera.prototype.setFovImpulse = function(dfov) {
+HNFPSCamera.prototype.setFovImpulse = function (dfov) {
     this.dfov = dfov;
     this.isDirty = true;
 }
-HNFPSCamera.prototype.updateInput = function(delta, keyboard) {
+HNFPSCamera.prototype.updateInput = function (delta, keyboard) {
     var dx = 0;
     var dy = 0;
     var dz = 0;

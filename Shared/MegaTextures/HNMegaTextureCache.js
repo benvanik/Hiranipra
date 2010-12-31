@@ -2,7 +2,7 @@
 // We also have a framebuffer that we use for doing the uploads - this may be suboptimal, but allows for some fixups
 // when input tiles don't match our cache tile size (they can get rescaled on the GPU).
 
-var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
+var HNMegaTextureCache = function (gl, tileSize, tileOverlap, tilesPerSide) {
     this.gl = gl;
     this.totalTileSize = tileSize + (tileOverlap * 2);
     this.tileSize = tileSize;
@@ -40,7 +40,7 @@ var HNMegaTextureCache = function(gl, tileSize, tileOverlap, tilesPerSide) {
 
     this.quadDrawer = new HNGLQuadDrawer(gl);
 }
-HNMegaTextureCache.prototype.dispose = function() {
+HNMegaTextureCache.prototype.dispose = function () {
     var gl = this.gl;
     this.quadDrawer.dispose();
     this.quadDrawer = null;
@@ -50,30 +50,30 @@ HNMegaTextureCache.prototype.dispose = function() {
     this.framebuffer = null;
     this.gl = null;
 }
-HNMegaTextureCache.prototype.registerMegaTexture = function(megaTexture) {
+HNMegaTextureCache.prototype.registerMegaTexture = function (megaTexture) {
     con.info("HNMegaTextureCache registered texture " + megaTexture.uniqueId);
     this.megaTextures[megaTexture.uniqueId] = megaTexture;
     megaTexture.lookup = new HNMegaTextureLookup(this, megaTexture);
 }
-HNMegaTextureCache.prototype.unregisterMegaTexture = function(megaTexture) {
+HNMegaTextureCache.prototype.unregisterMegaTexture = function (megaTexture) {
     // NOTE: our tiles will be cleaned up by the LRU automatically, although it'd be nice if we got rid of them to make debugging easier
     megaTexture.lookup.dispose();
     megaTexture.lookup = null;
     delete this.megaTextures[megaTexture.uniqueId];
     con.info("HNMegaTextureCache unregistered texture " + megaTexture.uniqueId);
 }
-HNMegaTextureCache.prototype.beginUpdate = function(frameNumber) {
+HNMegaTextureCache.prototype.beginUpdate = function (frameNumber) {
     var gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     this.quadDrawer.beginBatch(this.width, this.height);
     this.lastFrameNumber = frameNumber;
 }
-HNMegaTextureCache.prototype.endUpdate = function() {
+HNMegaTextureCache.prototype.endUpdate = function () {
     var gl = this.gl;
     this.quadDrawer.endBatch();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
-HNMegaTextureCache.prototype.addTile = function(tile) {
+HNMegaTextureCache.prototype.addTile = function (tile) {
     var gl = this.gl;
 
     // texture must actually be registered
@@ -148,7 +148,7 @@ HNMegaTextureCache.prototype.addTile = function(tile) {
 
     return true;
 }
-HNMegaTextureCache.prototype.removeTile = function(tileRef) {
+HNMegaTextureCache.prototype.removeTile = function (tileRef) {
     var key = tileRef.key;
     delete this.tiles[key];
     this.tileList.shift();
@@ -193,8 +193,8 @@ HNMegaTextureCache.prototype.removeTile = function(tileRef) {
         this.quadDrawer.fill(0, 0, 0, 1, sx, sy, sw, sh);
     }
 }
-HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount) {
-    this.tileList.sort(function(a, b) { return a.lastUse - b.lastUse; });
+HNMegaTextureCache.prototype.removeUnusedTiles = function (requestedRemovalCount) {
+    this.tileList.sort(function (a, b) { return a.lastUse - b.lastUse; });
     for (var removalCount = 0; (removalCount < requestedRemovalCount) && (this.tileList.length > 0); removalCount++) {
         var tileRef = this.tileList[0];
         if (tileRef.lastUse + 4 >= this.lastFrameNumber) {
@@ -206,7 +206,7 @@ HNMegaTextureCache.prototype.removeUnusedTiles = function(requestedRemovalCount)
         this.removeTile(tileRef);
     }
 }
-HNMegaTextureCache.prototype.clear = function() {
+HNMegaTextureCache.prototype.clear = function () {
     this.beginUpdate(this.renderFrameNumber);
     var tileList = this.tileList.slice(); // clone
     for (var n = 0; n < tileList.length; n++) {
@@ -215,16 +215,16 @@ HNMegaTextureCache.prototype.clear = function() {
     }
     this.endUpdate();
 }
-HNMegaTextureCache.prototype.getTileRef = function(megaTextureId, level, tileX, tileY) {
+HNMegaTextureCache.prototype.getTileRef = function (megaTextureId, level, tileX, tileY) {
     var key = [megaTextureId, level, tileX, tileY].join(",");
     return this.tiles[key];
 }
-HNMegaTextureCache.prototype.setPass1Uniforms = function(program, feedbackBuffer, megaTexture) {
+HNMegaTextureCache.prototype.setPass1Uniforms = function (program, feedbackBuffer, megaTexture) {
     var gl = this.gl;
     gl.uniform2f(program.u_mt_params, -Math.log(feedbackBuffer.downsample) / Math.log(2), megaTexture.maxLevel);
     gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
 }
-HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
+HNMegaTextureCache.prototype.setPass2Uniforms = function (program, megaTexture) {
     var gl = this.gl;
     gl.uniform4f(program.u_mt_tex, megaTexture.width, megaTexture.height, megaTexture.tileSize, megaTexture.uniqueId);
     gl.uniform4f(program.u_mt_texCache, this.width, this.height, 0, 0);
@@ -237,7 +237,7 @@ HNMegaTextureCache.prototype.setPass2Uniforms = function(program, megaTexture) {
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.activeTexture(gl.TEXTURE0);
 }
-HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber, loader) {
+HNMegaTextureCache.prototype.processCompletedTiles = function (renderFrameNumber, loader) {
     // Limit to just a few tiles per frame for now
     var completedTiles = loader.getCompletedTiles(2, renderFrameNumber);
     if (completedTiles.length > 0) {
@@ -260,7 +260,7 @@ HNMegaTextureCache.prototype.processCompletedTiles = function(renderFrameNumber,
         megaTexture.lookup.processChanges();
     }
 }
-HNMegaTextureCache.prototype.processFeedbackData = function(feedbackData, renderFrameNumber, loader) {
+HNMegaTextureCache.prototype.processFeedbackData = function (feedbackData, renderFrameNumber, loader) {
     var lastTexId = -1, lastLevel = 0, lastTileX = 0, lastTileY = 0;
     var pixelIndex = 0;
     for (var yy = 0; yy < feedbackData.height; yy++) {

@@ -2,7 +2,7 @@
 // Otherwise, if it has 'getTileUrl', we do it all async
 // TODO: worker threads (once Chrome supports them more)
 
-var HNMegaTextureLoader = function() {
+var HNMegaTextureLoader = function () {
     con.info("loader setup");
     this.suppressLoads = false;
 
@@ -14,9 +14,9 @@ var HNMegaTextureLoader = function() {
     this.inFlightRequests = [];
     this.pendingRequests = [];
 
-    var me = this;
-    /*this.worker = new Worker("HNMegaTextureLoader-Worker.js");
-    this.worker.onmessage = function(event) {
+    /*var me = this;
+    this.worker = new Worker("HNMegaTextureLoader-Worker.js");
+    this.worker.onmessage = function (event) {
         var result = JSON.parse(event.data);
         var tile = me.pendingTiles[result.key];
         if (!tile) {
@@ -27,9 +27,9 @@ var HNMegaTextureLoader = function() {
         // Pack result into tile
         tile.loadPixels(result.width, result.height, result.pixels);
         me.tileSucceeded(tile);
-    }*/
+    };*/
 }
-HNMegaTextureLoader.prototype.tileSucceeded = function(tile) {
+HNMegaTextureLoader.prototype.tileSucceeded = function (tile) {
     //con.debug("tile load succeeded " + tile.level + "@" + tile.tileX + "," + tile.tileY);
     var key = [tile.megaTexture.uniqueId, tile.level, tile.tileX, tile.tileY].join(",");
     this.completedTiles[key] = tile;
@@ -38,7 +38,7 @@ HNMegaTextureLoader.prototype.tileSucceeded = function(tile) {
         this.inFlightRequests.remove(index);
     }
 }
-HNMegaTextureLoader.prototype.tileFailed = function(tile) {
+HNMegaTextureLoader.prototype.tileFailed = function (tile) {
     con.error("tile load failed " + tile.level + "@" + tile.tileX + "," + tile.tileY);
     // TODO: retry logic
     // NOTE: we don't remove so the tile is never requested again
@@ -47,7 +47,7 @@ HNMegaTextureLoader.prototype.tileFailed = function(tile) {
         this.inFlightRequests.remove(index);
     }
 }
-HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY) {
+HNMegaTextureLoader.prototype.queue = function (megaTexture, level, tileX, tileY) {
     var key = [megaTexture.uniqueId, level, tileX, tileY].join(",");
     var existingTile = this.pendingTiles[key];
     if (existingTile) {
@@ -81,15 +81,15 @@ HNMegaTextureLoader.prototype.queue = function(megaTexture, level, tileX, tileY)
 
     return tile;
 }
-HNMegaTextureLoader.prototype.pump = function(renderFrameNumber) {
+HNMegaTextureLoader.prototype.pump = function (renderFrameNumber) {
     if (this.pendingRequests.length == 0) {
         // Nothing to do
         return;
     }
 
     // TODO: a more clever sort - right now we always take the lowest (coarsest) level first
-    this.pendingRequests.sort(function(a, b) { return a.level - b.level; });
-    
+    this.pendingRequests.sort(function (a, b) { return a.level - b.level; });
+
     while (this.pendingRequests.length > 0) {
         if (this.inFlightRequests.length > this.maxInFlightRequests) {
             // No more can go
@@ -104,7 +104,7 @@ HNMegaTextureLoader.prototype.pump = function(renderFrameNumber) {
         request.beginRequest(this);
     }
 }
-HNMegaTextureLoader.prototype.getCompletedTiles = function(max, renderFrameNumber) {
+HNMegaTextureLoader.prototype.getCompletedTiles = function (max, renderFrameNumber) {
     if (this.suppressLoads) {
         return [];
     }

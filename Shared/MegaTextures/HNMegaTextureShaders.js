@@ -56,15 +56,15 @@ HNMegaTextureShaders.pass2fs = [
 "}"
 ].join("\n");
 
-HNMegaTextureShaders.prependPass1vs = function(source) {
+HNMegaTextureShaders.prependPass1vs = function (source) {
     return [HNMegaTextureShaders.sharedvs, HNMegaTextureShaders.pass1vs, source].join("\n");
 }
-HNMegaTextureShaders.prependPass1fs = function(source) {
+HNMegaTextureShaders.prependPass1fs = function (source) {
     return [HNMegaTextureShaders.sharedfs, HNMegaTextureShaders.pass1fs, source].join("\n");
 }
-HNMegaTextureShaders.prependPass2vs = function(source) {
+HNMegaTextureShaders.prependPass2vs = function (source) {
     return [HNMegaTextureShaders.sharedvs, HNMegaTextureShaders.pass2vs, source].join("\n");
 }
-HNMegaTextureShaders.prependPass2fs = function(source) {
+HNMegaTextureShaders.prependPass2fs = function (source) {
     return [HNMegaTextureShaders.sharedfs, HNMegaTextureShaders.pass2fs, source].join("\n");
 }

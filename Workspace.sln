@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A94BF7A8-41A4-40C2-91E0-94B96DAA93FD}"
 	ProjectSection(SolutionItems) = preProject
 		Shared\HNConfig.js = Shared\HNConfig.js

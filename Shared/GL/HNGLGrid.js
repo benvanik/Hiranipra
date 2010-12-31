@@ -1,4 +1,4 @@
-var HNGLGrid = function(gl, blocks, spacing) {
+var HNGLGrid = function (gl, blocks, spacing) {
     con.beginGroupCollapsed("HNGL - creating grid");
     try {
         this.program = HNGLProgram.fromSources(gl,
@@ -42,7 +42,7 @@ var HNGLGrid = function(gl, blocks, spacing) {
         gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(positions), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-        this.program.begin = function(viewProjMatrix, scale) {
+        this.program.begin = function (viewProjMatrix, scale) {
             var gl = this.gl;
             gl.useProgram(this.id);
             gl.uniformMatrix4fv(this.u_viewProjMatrix, false, viewProjMatrix.asArray());
@@ -50,7 +50,7 @@ var HNGLGrid = function(gl, blocks, spacing) {
             gl.uniform4f(this.u_color, 1.0, 1.0, 1.0, 1.0);
             gl.enableVertexAttribArray(this.a_pos);
         };
-        this.program.end = function() {
+        this.program.end = function () {
             var gl = this.gl;
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.disableVertexAttribArray(this.a_pos);
@@ -63,7 +63,7 @@ var HNGLGrid = function(gl, blocks, spacing) {
         con.endGroup();
     }
 }
-HNGLGrid.prototype.dispose = function() {
+HNGLGrid.prototype.dispose = function () {
     this.gl.deleteBuffer(this.posBuffer);
     this.posBuffer = null;
     if (this.program) {
@@ -72,7 +72,7 @@ HNGLGrid.prototype.dispose = function() {
     }
     this.gl = null;
 }
-HNGLGrid.prototype.draw = function(viewProjMatrix, scale) {
+HNGLGrid.prototype.draw = function (viewProjMatrix, scale) {
     var gl = this.gl;
     this.program.begin(viewProjMatrix, scale);
 
