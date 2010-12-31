@@ -15,9 +15,6 @@ var HNMegaTexture = function (uniqueId, width, height, tileSize, tileOverlap) {
 }
 
 var HNTestMegaTexture = function (uniqueId, width, height, tileSize, tileOverlap) {
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = tileSize + tileOverlap * 2;
-    this.canvas.height = tileSize + tileOverlap * 2;
     HNMegaTexture.call(this, uniqueId, width, height, tileSize, tileOverlap);
 }
 HNTestMegaTexture.prototype.getTileData = function (level, tileX, tileY) {
@@ -47,18 +44,21 @@ HNTestMegaTexture.prototype.getTileData = function (level, tileX, tileY) {
     }
 
     // TODO: canvas capture? webgl byte array? ImageData?
-    this.canvas.width = tw;
-    this.canvas.height = th;
-    var ctx = this.canvas.getContext("2d");
+    var canvas = document.createElement("canvas");
+    canvas.width = tw;
+    canvas.height = th;
+    var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, tw, th);
-    ctx.fillStyle = "rgb(" + Math.random() * 255 + ",0,0,1)";
+    ctx.fillStyle = "rgb(" + Math.floor(Math.random() * 255) + ",0,0)";
     ctx.fillRect(0, 0, tw, th);
-    ctx.fillStyle = "rgb(255,255,255,1)";
-    ctx.fillText(level + "@" + tileX + "," + tileY, 5, 5);
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.fillText(level + "@" + tileX + "," + tileY, 2, 10);
+
     var result = {
         width: this.totalTileSize,
         height: this.totalTileSize,
-        data: ctx.getImageData(0, 0, tw, th)
+        canvas: canvas
+        //data: ctx.getImageData(0, 0, tw, th)
     };
     return result;
 }

@@ -9,8 +9,8 @@ var HNGLGeometry = function (gl, primitiveType, primitiveCount) {
 }
 HNGLGeometry.prototype.dispose = function () {
     var gl = this.gl;
-    for (var dataBuffer in this.dataBuffers) {
-        gl.deleteBuffer(dataBuffer.handle);
+    for (var n = 0; n < this.dataBuffers.length; n++) {
+        gl.deleteBuffer(this.dataBuffers[n].handle);
     }
     this.dataBuffers = [];
     if (this.indexBuffer) {
@@ -32,22 +32,22 @@ HNGLGeometry.prototype.setData = function (index, type, count, data) {
     if (typeOf(data) == "array") {
         switch (type) {
             case gl.BYTE:
-                dataArray = new WebGLByteArray(data);
+                dataArray = new Int8Array(data);
                 break;
             case gl.UNSIGNED_BYTE:
-                dataArray = new WebGLUnsignedByteArray(data);
+                dataArray = new Uint8Array(data);
                 break;
             case gl.SHORT:
-                dataArray = new WebGLShortArray(data);
+                dataArray = new Int16Array(data);
                 break;
             case gl.UNSIGNED_SHORT:
-                dataArray = new WebGLUnsignedShortArray(data);
+                dataArray = new Uint16Array(data);
                 break;
             case gl.INTEGER:
-                dataArray = new WebGLIntArray(data);
+                dataArray = new Int32Array(data);
                 break;
             case gl.UNSIGNED_INT:
-                dataArray = new WebGLUnsignedIntArray(data);
+                dataArray = new Uint32Array(data);
                 break;
             case gl.FLOAT:
                 dataArray = new Float32Array(data);
@@ -82,7 +82,7 @@ HNGLGeometry.prototype.setIndices = function (indices) {
     this.indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     if (indices.shift) {
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(indices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     } else {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
     }
@@ -126,7 +126,7 @@ HNGLGeometry.quad = function (gl) {
 HNGLGeometry.segmentedQuad = function (gl, segments) {
     var positions = new Float32Array(segments * segments * 4 * 3);
     var texCoords = new Float32Array(segments * segments * 4 * 2);
-    var indices = new WebGLUnsignedShortArray(segments * segments * 6);
+    var indices = new Uint16Array(segments * segments * 6);
     for (var y = 0; y < segments; y++) {
         for (var x = 0; x < segments; x++) {
             var posIndex = (y * segments + x) * 4 * 3;
@@ -175,7 +175,7 @@ HNGLGeometry.sphere = function (gl, radius, lats, longs) {
     var texCoords = new Float32Array((lats + 1) * (longs + 1) * 2 * 2);
     var normals = new Float32Array((lats + 1) * (longs + 1) * 3 * 2);
     var indexCount = lats * longs * 6 * 2;
-    var indices = new WebGLUnsignedShortArray(indexCount);
+    var indices = new Uint16Array(indexCount);
 
     var positionIndex = 0;
     var texCoordIndex = 0;

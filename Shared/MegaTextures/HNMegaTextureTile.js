@@ -44,6 +44,18 @@ HNMegaTextureTile.fromUrl = function (megaTexture, level, tileX, tileY, url) {
     tile.img = img;
     return tile;
 }
+HNMegaTextureTile.fromCanvas = function (megaTexture, level, tileX, tileY, canvas) {
+    var tile = new HNMegaTextureTile(megaTexture, level, tileX, tileY);
+    tile.img = canvas;
+    setTimeout(function () {
+        tile.isLoading = false;
+        tile.isPresent = true;
+        if (tile.successCallback) {
+            tile.successCallback.call(tile.callbackTarget, tile);
+        }
+    }, 0);
+    return tile;
+}
 HNMegaTextureTile.createPlaceholder = function (megaTexture, level, tileX, tileY) {
     var tile = new HNMegaTextureTile(megaTexture, level, tileX, tileY);
     return tile;
@@ -100,21 +112,21 @@ HNMegaTextureTile.prototype.uploadTexture = function (gl) {
     if (this.img) {
         width = this.img.width;
         height = this.img.height;
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.img);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
     } else if (this.pixelArray) {
         width = this.pixelArray.width;
         height = this.pixelArray.height;
         var pixelData;
-        if (this.pixelArray.pixels.constructor == WebGLUnsignedByteArray) {
+        if (this.pixelArray.pixels.constructor == Uint8Array) {
             pixelData = this.pixelArray.pixels;
         } else if (this.pixelArray.pixels.data) {
             // TODO: is this required with a CanvasPixelArray?
-            pixelData = new WebGLUnsignedByteArray(this.pixelArray.pixels.data);
+            pixelData = new Uint8Array(this.pixelArray.pixels.data);
         } else {
-            pixelData = new WebGLUnsignedByteArray(this.pixelArray.pixels);
+            pixelData = new Uint8Array(this.pixelArray.pixels);
         }
         if (pixelData) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTES, pixelData);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixelData);
         }
     } else {
         con.error("unsupported tile type for upload");

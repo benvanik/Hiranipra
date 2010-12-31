@@ -56,7 +56,9 @@ HNMegaTextureLoader.prototype.queue = function (megaTexture, level, tileX, tileY
 
     var tile = null;
     if (megaTexture.getTileData) {
-        tile = HNMegaTextureTile.createPlaceholder(megaTexture, level, tileX, tileY);
+        //tile = HNMegaTextureTile.createPlaceholder(megaTexture, level, tileX, tileY);
+        var ret = megaTexture.getTileData(level, tileX, tileY);
+        tile = HNMegaTextureTile.fromCanvas(megaTexture, level, tileX, tileY, ret.canvas);
     } else if (megaTexture.getTileUrl) {
         // URL - create as async img
         var url = megaTexture.getTileUrl(level, tileX, tileY);

@@ -35,7 +35,7 @@ var HNMegaTextureLookup = function (textureCache, megaTexture) {
     emptyTexImage2D(gl, gl.RGB, this.width, this.height, gl.RGB, gl.UNSIGNED_BYTE);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
+    this.data = new Uint8Array(this.width * this.height * 3);
     this.changes = [];
 }
 HNMegaTextureLookup.prototype.dispose = function () {
@@ -130,7 +130,7 @@ HNMegaTextureLookup.prototype.processChanges = function () {
         } else {
             // Clear the entire slot
             // Note that there is probably a better way
-            this.data = new WebGLUnsignedByteArray(this.width * this.height * 3);
+            this.data = new Uint8Array(this.width * this.height * 3);
         }
     }
 

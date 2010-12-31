@@ -67,7 +67,9 @@ HNGLFeedbackBuffer.prototype.end = function () {
 HNGLFeedbackBuffer.prototype.readPixels = function () {
     var gl = this.gl;
     // NOTE: this only works if our framebuffer is bound and we have the right viewport set
-    var pixels = gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
+    gl.flush();
+    var pixels = new Uint8Array(this.width * this.height * 4);
+    gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     return {
         width: this.width,
         height: this.height,
