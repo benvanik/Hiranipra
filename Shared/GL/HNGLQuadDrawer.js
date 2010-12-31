@@ -125,10 +125,10 @@ HNGLQuadDrawer.prototype.draw = function (texture, sx, sy, sw, sh, flipY) {
         1.0, tv1,
     ];
     gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(positions), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     gl.vertexAttribPointer(this.texProgram.a_pos, 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tex0Buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(tex0s), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tex0s), gl.STATIC_DRAW);
     gl.vertexAttribPointer(this.texProgram.a_tex0, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -149,7 +149,7 @@ HNGLQuadDrawer.prototype.fill = function (r, g, b, a, sx, sy, sw, sh) {
         sx + sw, sy + sh,
     ];
     gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(positions), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     gl.vertexAttribPointer(this.colorProgram.a_pos, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);

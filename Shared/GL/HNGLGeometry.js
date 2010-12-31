@@ -50,7 +50,7 @@ HNGLGeometry.prototype.setData = function (index, type, count, data) {
                 dataArray = new WebGLUnsignedIntArray(data);
                 break;
             case gl.FLOAT:
-                dataArray = new WebGLFloatArray(data);
+                dataArray = new Float32Array(data);
                 break;
         }
     } else {
@@ -124,8 +124,8 @@ HNGLGeometry.quad = function (gl) {
 }
 
 HNGLGeometry.segmentedQuad = function (gl, segments) {
-    var positions = new WebGLFloatArray(segments * segments * 4 * 3);
-    var texCoords = new WebGLFloatArray(segments * segments * 4 * 2);
+    var positions = new Float32Array(segments * segments * 4 * 3);
+    var texCoords = new Float32Array(segments * segments * 4 * 2);
     var indices = new WebGLUnsignedShortArray(segments * segments * 6);
     for (var y = 0; y < segments; y++) {
         for (var x = 0; x < segments; x++) {
@@ -171,9 +171,9 @@ HNGLGeometry.segmentedQuad = function (gl, segments) {
 // From the Apple utils3d.js file released with their demos:
 // http://trac.webkit.org/browser/trunk/WebKitSite/blog-files/webgl/resources/utils3d.js?format=txt
 HNGLGeometry.sphere = function (gl, radius, lats, longs) {
-    var positions = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);
-    var texCoords = new WebGLFloatArray((lats + 1) * (longs + 1) * 2 * 2);
-    var normals = new WebGLFloatArray((lats + 1) * (longs + 1) * 3 * 2);
+    var positions = new Float32Array((lats + 1) * (longs + 1) * 3 * 2);
+    var texCoords = new Float32Array((lats + 1) * (longs + 1) * 2 * 2);
+    var normals = new Float32Array((lats + 1) * (longs + 1) * 3 * 2);
     var indexCount = lats * longs * 6 * 2;
     var indices = new WebGLUnsignedShortArray(indexCount);
 
