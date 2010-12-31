@@ -2,6 +2,8 @@ var HNMegaTextureShaders = {};
 // float maxLevel = ceil( log2( max( u_mt_tex.x, u_mt_tex.y ) ) ) - 8.0;
 HNMegaTextureShaders.sharedvs = "";
 HNMegaTextureShaders.sharedfs = [
+"#extension GL_OES_standard_derivatives : enable",
+"precision highp float;",
 "uniform vec4 u_mt_tex;", // [ width, height, tileSize, id ]
 "float MTCalculateMipLevel( const in vec2 uv, const in float bias ) {",
 "   vec2 dx = dFdx( uv * u_mt_tex.x );",
