@@ -11,6 +11,7 @@ var HNGLGrid = function (gl, blocks, spacing) {
                 "}"
             ].join("\n"),
             [
+                "precision highp float;",
                 "uniform vec4 u_color;",
                 "void main() {",
                 "    gl_FragColor = u_color;",
@@ -54,7 +55,7 @@ var HNGLGrid = function (gl, blocks, spacing) {
             var gl = this.gl;
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.disableVertexAttribArray(this.a_pos);
-            //gl.useProgram(null);
+            gl.useProgram(null);
         };
 
         this.gl = gl;

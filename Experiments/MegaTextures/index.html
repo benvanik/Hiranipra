@@ -49,12 +49,14 @@
         }
     </script>
     <script id="simple-mt-pass1fs" type="x-shader/x-fragment">
+        precision highp float;
         varying vec2 v_tex0;
         void main() {
             gl_FragColor = MTCalculateTileKeyRGBA( v_tex0 );
         }
     </script>
     <script id="simple-mt-pass2fs" type="x-shader/x-fragment">
+        precision highp float;
         varying vec2 v_tex0;
         void main() {
             //gl_FragColor = MTSampleBilinear( v_tex0 );
@@ -133,14 +135,14 @@
                             megaTexture = new HNDeepZoomMegaTexture(
                                 100,
                                 '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="29566" Height="14321"/></Image>',
-                                "http://content.seadragon.com/content/images/CarinaNebula.dzi"
+                                "http://www.seadragon.com/content/images/CarinaNebula.dzi"
                             );
                             break;
                         case 1:
                             megaTexture = new HNDeepZoomMegaTexture(
                                 150,
                                 '<?xml version="1.0" encoding="UTF-8"?><Image TileSize="254" Overlap="1" Format="jpg" xmlns="http://schemas.microsoft.com/deepzoom/2008"><Size Width="50514" Height="25257"/></Image>',
-                                "http://content.seadragon.com/content/images/cjplastic.dzi"
+                                "http://www.seadragon.com/content/images/cjplastic.dzi"
                             );
                             break;
                         case 2:
@@ -217,7 +219,7 @@
                 this.staticProgram.pass1.end = function () {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
-                    //gl.useProgram(null);
+                    gl.useProgram(null);
                 };
                 this.staticProgram.pass2.begin = function (viewProjMatrix, modelMatrix) {
                     gl.useProgram(this.id);
@@ -230,7 +232,7 @@
                 this.staticProgram.pass2.end = function () {
                     gl.disableVertexAttribArray(this.a_tex0);
                     gl.disableVertexAttribArray(this.a_pos);
-                    //gl.useProgram(null);
+                    gl.useProgram(null);
                 };
 
                 if (this.objs) {

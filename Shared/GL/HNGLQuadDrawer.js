@@ -13,6 +13,7 @@ var HNGLQuadDrawer = function (gl) {
                 "}"
             ].join("\n"),
             [
+                "precision highp float;",
                 "uniform vec4 u_color;",
                 "uniform sampler2D s_tex0;",
                 "varying vec2 v_tex0;",
@@ -30,6 +31,7 @@ var HNGLQuadDrawer = function (gl) {
                 "}"
             ].join("\n"),
             [
+                "precision highp float;",
                 "uniform vec4 u_color;",
                 "void main() {",
                 "    gl_FragColor = u_color;",
@@ -51,7 +53,7 @@ var HNGLQuadDrawer = function (gl) {
             var gl = this.gl;
             gl.disableVertexAttribArray(this.a_tex0);
             gl.disableVertexAttribArray(this.a_pos);
-            //gl.useProgram(null);
+            gl.useProgram(null);
         };
 
         this.colorProgram.begin = function (viewProjMatrix) {
@@ -63,7 +65,7 @@ var HNGLQuadDrawer = function (gl) {
         this.colorProgram.end = function () {
             var gl = this.gl;
             gl.disableVertexAttribArray(this.a_pos);
-            //gl.useProgram(null);
+            gl.useProgram(null);
         };
 
         this.posBuffer = gl.createBuffer();
