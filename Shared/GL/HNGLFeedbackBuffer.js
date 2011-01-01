@@ -53,6 +53,8 @@ HNGLFeedbackBuffer.prototype.resize = function (viewportWidth, viewportHeight) {
     }
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    this.pixels = new Uint8Array(this.width * this.height * 4);
 }
 HNGLFeedbackBuffer.prototype.begin = function () {
     var gl = this.gl;
@@ -68,11 +70,11 @@ HNGLFeedbackBuffer.prototype.readPixels = function () {
     var gl = this.gl;
     // NOTE: this only works if our framebuffer is bound and we have the right viewport set
     gl.flush();
-    var pixels = new Uint8Array(this.width * this.height * 4);
-    gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    //var pixels = new Uint8Array(this.width * this.height * 4);
+    gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
     return {
         width: this.width,
         height: this.height,
-        pixels: (pixels.data ? pixels.data : pixels)
+        pixels: (this.pixels.data ? this.pixels.data : this.pixels)
     };
 }
